@@ -1,0 +1,3 @@
+displayName = Chicken Invaders Mod
+author = jojo070
+version = 0.1
