@@ -5,18 +5,19 @@ namespace ChickenInvadersMod
 {
     public class CIPlayer : ModPlayer
     {
-        public override void PostUpdate()
-        {
-            const int XOffset = 1200;
+        // not using thos right now, the GlobalNPC should handle spawnrate/spawnpool
+        //public override void PostUpdate()
+        //{
+            //const int XOffset = 1200;
 
-            if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(player))
-            {
-                if (Main.rand.NextBool(300))
-                    NPC.NewNPC((int)player.Center.X + XOffset, (int)player.Center.Y, ModContent.NPCType<NPCs.Chicken>());
-                if (Main.rand.NextBool(300))
-                    NPC.NewNPC((int)player.Center.X - XOffset, (int)player.Center.Y, ModContent.NPCType<NPCs.Chicken>());
-                // todo more enemies
-            }
-        }
+            //if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(player))
+            //{
+            //    if (Main.rand.NextBool(300))
+            //        NPC.NewNPC((int)player.Center.X + XOffset, (int)player.Center.Y, ModContent.NPCType<NPCs.Chicken>());
+            //    if (Main.rand.NextBool(300))
+            //        NPC.NewNPC((int)player.Center.X - XOffset, (int)player.Center.Y, ModContent.NPCType<NPCs.Chicken>());
+            //    // todo more enemies
+            //}
+        //}
     }
 }

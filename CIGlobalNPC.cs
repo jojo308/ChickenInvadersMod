@@ -8,10 +8,12 @@ namespace ChickenInvadersMod
     {
         public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
         {
+            // todo different weights for each wave
             if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(spawnInfo.player))
             {               
                 pool.Clear();
                 pool.Add(ModContent.NPCType<NPCs.Chicken>(), 2f);
+                pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 0.5f);
             }
         }
 

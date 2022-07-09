@@ -1,16 +1,15 @@
-﻿using Microsoft.Xna.Framework;
-using Terraria;
+﻿using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
-    public class Chicken : ModNPC
+    public class PilotChicken : ModNPC
     {
         public override void SetStaticDefaults()
         {
-            DisplayName.SetDefault("Chicken");
+            DisplayName.SetDefault("Pilot Chicken");
             Main.npcFrameCount[npc.type] = Main.npcFrameCount[2];
         }
 
@@ -19,19 +18,15 @@ namespace ChickenInvadersMod.NPCs
             npc.width = 64;
             npc.height = 64;
             npc.aiStyle = 2;
-            npc.damage = 28;
-            npc.defense = 10;
-            npc.lifeMax = 125;
+            npc.damage = 30;
+            npc.defense = 12;
+            npc.lifeMax = 250;
             npc.value = 50f;
             npc.friendly = false;
+            npc.buffImmune[BuffID.Poisoned] = true;
             npc.buffImmune[BuffID.Confused] = true;
-            npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
-            npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
-        }
-
-        public override float SpawnChance(NPCSpawnInfo spawnInfo)
-        {
-            return SpawnCondition.Sky.Chance * 0.2f;
+            npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit2").WithVolume(1f).WithPitchVariance(.3f); ;
+            npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death2").WithVolume(1f).WithPitchVariance(.3f);
         }
 
         public override void FindFrame(int frameHeight)
@@ -61,7 +56,6 @@ namespace ChickenInvadersMod.NPCs
                 Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
-
             if (Main.rand.NextBool(2))
             {
                 Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
@@ -70,17 +64,33 @@ namespace ChickenInvadersMod.NPCs
             base.NPCLoot();
         }
 
+        bool shouldShootSecond = false;
+        int timeBetween = 16;
+
         public override void AI()
         {
             npc.TargetClosest();
 
             int type = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
-            float speed = 7f;
+            float speed = 8f;
             int damage = npc.damage / 2;
 
+            // shoot once
             if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && Main.rand.NextBool(900))
             {
                 this.Shoot(type, speed, damage);
+                shouldShootSecond = true;
+            }
+
+            // decrement timer for second shot
+            if (shouldShootSecond) timeBetween--;
+
+            // shoot twice
+            if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && timeBetween == 0)
+            {
+                this.Shoot(type, speed, damage);
+                timeBetween = 8;
+                shouldShootSecond = false;
             }
             base.AI();
         }
