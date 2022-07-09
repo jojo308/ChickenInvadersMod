@@ -3,7 +3,7 @@ using Terraria.ModLoader;
 
 namespace ChickenInvadersMod.Projectiles
 {
-    public class EggProjectile : ModProjectile
+    class FallingEggProjectile : ModProjectile
     {
         public override void SetStaticDefaults()
         {
@@ -18,7 +18,7 @@ namespace ChickenInvadersMod.Projectiles
             projectile.timeLeft = 300;
             projectile.penetrate = 1;
             projectile.ignoreWater = true;
-            projectile.friendly = true;
+            projectile.hostile = true;          
             projectile.tileCollide = true;
         }
 
@@ -26,6 +26,7 @@ namespace ChickenInvadersMod.Projectiles
         {
             Collision.HitTiles(projectile.position, projectile.velocity, projectile.width, projectile.height);
             Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Splash").WithVolume(2f).WithPitchVariance(.3f), projectile.position);
-        }        
+        }
+              
     }
 }

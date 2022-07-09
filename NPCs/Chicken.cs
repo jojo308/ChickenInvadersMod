@@ -1,4 +1,5 @@
-﻿using Terraria;
+﻿using Microsoft.Xna.Framework;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
@@ -21,10 +22,11 @@ namespace ChickenInvadersMod.NPCs
             npc.width = 64;
             npc.height = 64;
             npc.aiStyle = 2;
-            npc.damage = 16;
+            npc.damage = 28;
             npc.defense = 10;
             npc.lifeMax = 125;
             npc.value = 50f;
+            npc.friendly = false;
             npc.buffImmune[BuffID.Poisoned] = true;
             npc.buffImmune[BuffID.Confused] = true;
 
@@ -76,6 +78,28 @@ namespace ChickenInvadersMod.NPCs
             }
 
             base.NPCLoot();
+        }
+
+        public override void AI()
+        {
+            npc.TargetClosest();
+            if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && Main.rand.NextBool(900))
+            {
+                // target player
+                Vector2 position = npc.Center;
+                Vector2 targetPosition = Main.player[npc.target].Center;
+                Vector2 direction = targetPosition - position;
+                direction.Normalize();
+
+                // set params
+                float speed = 7f;
+                int type = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
+                int damage = npc.damage / 2;
+
+                // shoot
+                Projectile.NewProjectile(position, direction * speed, type, damage, 0f, Main.myPlayer);
+            }
+            base.AI();
         }
     }
 }

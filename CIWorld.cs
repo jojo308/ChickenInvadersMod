@@ -75,7 +75,7 @@ namespace ChickenInvadersMod
         {
             if (ChickenInvasionActive && Main.invasionType == -1 || Main.invasionType != 0)
             {
-                ChatUtils.SendMessage($"Another invasion is already in progress ({Main.invasionType})", Color.White);
+                ChatUtils.SendMessage($"An invasion is already in progress ({Main.invasionType})", Color.White);
                 return false;
             }
 
@@ -127,7 +127,13 @@ namespace ChickenInvadersMod
         /// </summary>
         private static void UpdateCIEvent()
         {
-            ReportInvasionProgress();
+            var isNear = PlayerNearInvasion(Main.LocalPlayer);
+            Main.invasionProgressNearInvasion = isNear;
+
+            if (isNear)
+            {
+                ReportInvasionProgress();
+            }
 
             if (Main.invasionSize <= 0)
             {
@@ -170,21 +176,17 @@ namespace ChickenInvadersMod
         {
             var pos1 = new Vector2(player.position.X - 1200, SpawnLocation.Y);
             var pos2 = new Vector2(player.position.X + 1200, SpawnLocation.Y);
-            ChatUtils.SendMessage("Player near invasion: " + SpawnLocation.Between(pos1, pos2));
             return SpawnLocation.Between(pos1, pos2);
         }
 
         /// <summary>
-        /// Reports the progress of the Chicken Invasion. Will only be shown if the player is near the event
+        /// Reports the progress of the Chicken Invasion
         /// </summary>
         public static void ReportInvasionProgress()
         {
-            var flag = PlayerNearInvasion(Main.LocalPlayer);
-            Main.invasionProgressNearInvasion = flag;
-
             if (Main.netMode == NetmodeID.SinglePlayer)
             {
-                if (ChickenInvasionActive && flag)
+                if (ChickenInvasionActive)
                 {
                     Main.ReportInvasionProgress(WaveRequiredKillCount - Main.invasionSize, 50, 0, Main.invasionProgressWave);
                 }
@@ -203,7 +205,7 @@ namespace ChickenInvadersMod
         }
 
         /// <summary>
-        /// Reports the killed NPC. If the npc was part of the event, update the progress
+        /// Reports the killed NPC. If the npc was part of the event, updates the progress
         /// </summary>
         /// <param name="npc">The NPC that was killed</param>
         public static void ReportKill(int npc)
@@ -213,6 +215,7 @@ namespace ChickenInvadersMod
                 if (npc == enemy)
                 {
                     Main.invasionSize--;
+                    ReportInvasionProgress();
                     break;
                 }
             }
