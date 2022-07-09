@@ -1,3 +1,6 @@
 displayName = Chicken Invaders Mod
 author = jojo070
 version = 0.1
+homepage = https://github.com/jojo308/ChickenInvadersMod
+buildIgnore = .git\*, .gitignore, .gitattributes, *.md, *.sln, *.csproj, *.user, obj\*, bin\*, dllReferences\*, .vs\*
+includeSource = true
