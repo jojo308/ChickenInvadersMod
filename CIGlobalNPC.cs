@@ -12,9 +12,10 @@ namespace ChickenInvadersMod
             if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(spawnInfo.player))
             {               
                 pool.Clear();
+                pool.Add(ModContent.NPCType<NPCs.Chick>(), 3f);
                 pool.Add(ModContent.NPCType<NPCs.Chicken>(), 2f);
                 pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 0.5f);
-                pool.Add(ModContent.NPCType<NPCs.UfoChicken>(), 0.25f);
+                pool.Add(ModContent.NPCType<NPCs.UfoChicken>(), 0.25f);                
             }
         }
 
