@@ -14,6 +14,7 @@ namespace ChickenInvadersMod
                 pool.Clear();
                 pool.Add(ModContent.NPCType<NPCs.Chicken>(), 2f);
                 pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 0.5f);
+                pool.Add(ModContent.NPCType<NPCs.UfoChicken>(), 0.25f);
             }
         }
 

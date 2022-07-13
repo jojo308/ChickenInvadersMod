@@ -27,5 +27,21 @@ namespace ChickenInvadersMod.NPCs
             // shoot
             Projectile.NewProjectile(position, direction * speed, projectileId, damage, kb, Main.myPlayer);
         }
+
+        /// <summary>
+        /// Shoots a projectile straight down
+        /// </summary>
+        /// <param name="modNpc"></param>
+        public static void ShootDown(this ModNPC modNpc, int projectileId, float speed, int damage, float kb = 0f)
+        {
+            // target down
+            Vector2 pos = modNpc.npc.Bottom;            
+            Vector2 target = new Vector2(pos.X, pos.Y + 1);
+            Vector2 dir = target - pos;
+            dir.Normalize();
+
+            // shoot
+            Projectile.NewProjectile(pos, dir * speed, projectileId, damage, kb, Main.myPlayer);
+        }
     }
 }
