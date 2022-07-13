@@ -25,7 +25,12 @@ namespace ChickenInvadersMod
             base.Initialize();
             ChickenInvasionActive = false;
             DownedBoss = false;
-            Enemies = new int[] { ModContent.NPCType<NPCs.Chicken>() };
+            Enemies = new int[] {
+                ModContent.NPCType<NPCs.Chick>(),
+                ModContent.NPCType<NPCs.Chicken>(),
+                ModContent.NPCType<NPCs.PilotChicken>(),
+                ModContent.NPCType<NPCs.UfoChicken>(),
+            };
         }
 
         public override TagCompound Save()
@@ -159,9 +164,9 @@ namespace ChickenInvadersMod
 
             switch (Main.invasionProgressWave)
             {
-                case 1: ChatUtils.SendMessage("Wave 1: Chickens", DefaultColor); break;
-                case 2: ChatUtils.SendMessage("Wave 2: More chickens", DefaultColor); break;
-                case 3: ChatUtils.SendMessage("Wave 3: Even more Chickens", DefaultColor); break;
+                case 1: ChatUtils.SendMessage("Wave 1: Chicks and chickens", DefaultColor); break;
+                case 2: ChatUtils.SendMessage("Wave 2: Chicks, chickens and Pilot chickens", DefaultColor); break;
+                case 3: ChatUtils.SendMessage("Wave 3: Chickens, Pilot chickens and UFO chickens", DefaultColor); break;
                 case 4: ChatUtils.SendMessage("Wave 4: Chicken Overload", DefaultColor); break;
                 default: ChatUtils.SendMessage("Wave 5: Boss battle", DefaultColor); break;
             }

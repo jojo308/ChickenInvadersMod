@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Terraria;
+﻿using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
@@ -46,11 +45,10 @@ namespace ChickenInvadersMod.NPCs
             if (Main.rand.NextBool(3))
             {
                 var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.ChickenDrumstick>(), 0.7);
-                dropChooser.Add(ModContent.ItemType<Items.ChickenTwinLegs>(), 0.125);
-                dropChooser.Add(ModContent.ItemType<Items.ChickenRoast>(), 0.025);
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.125);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.025);
+                dropChooser.Add(ModContent.ItemType<Items.ChickenDrumstick>(), 0.8);
+                dropChooser.Add(ModContent.ItemType<Items.ChickenRoast>(), 0.05);
+                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
+                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
                 int choice = dropChooser;
                 Item.NewItem(npc.getRect(), choice);
             }
