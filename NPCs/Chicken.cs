@@ -76,9 +76,10 @@ namespace ChickenInvadersMod.NPCs
             float speed = 7f;
             int damage = npc.damage / 2;
 
+            // shoot eggs 
             if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && Main.rand.NextBool(900))
             {
-                this.Shoot(type, speed, damage);
+                npc.Shoot(npc.Center, type, speed, damage);
             }
             base.AI();
         }

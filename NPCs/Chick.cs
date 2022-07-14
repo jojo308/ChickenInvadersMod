@@ -1,15 +1,18 @@
 ﻿using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
     public class Chick : ModNPC
     {
+        int projectileType;
+        int projectileDamage;
+        float projectileSpeed;
+
         public override void SetStaticDefaults()
         {
-            DisplayName.SetDefault("Chicken");
+            DisplayName.SetDefault("Chick");
             Main.npcFrameCount[npc.type] = Main.npcFrameCount[2];
         }
 
@@ -17,7 +20,7 @@ namespace ChickenInvadersMod.NPCs
         {
             npc.width = 32;
             npc.height = 32;
-            npc.aiStyle = 23; // 23
+            npc.aiStyle = 23;
             npc.damage = 20;
             npc.defense = 10;
             npc.lifeMax = 75;
@@ -26,6 +29,10 @@ namespace ChickenInvadersMod.NPCs
             npc.buffImmune[BuffID.Confused] = true;
             npc.HitSound = SoundID.NPCHit1;
             npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chick_Death").WithVolume(1.5f).WithPitchVariance(.3f);
+
+            projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
+            projectileDamage = npc.damage / 2;
+            projectileSpeed = 5f;
         }
 
         public override void FindFrame(int frameHeight)
@@ -60,13 +67,9 @@ namespace ChickenInvadersMod.NPCs
         {
             npc.TargetClosest();
 
-            int type = ModContent.ProjectileType<Projectiles.GuanoProjectile>();
-            float speed = 5f;
-            int damage = npc.damage / 2;
-
             if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && Main.rand.NextBool(900))
             {
-                this.Shoot(type, speed, damage);
+                npc.Shoot(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
             }
             base.AI();
         }

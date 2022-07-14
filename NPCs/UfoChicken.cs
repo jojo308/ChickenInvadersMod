@@ -8,12 +8,12 @@ namespace ChickenInvadersMod.NPCs
     class UfoChicken : ModNPC
     {
         int projectileType;
-        int damage;
-        float speed;
+        int projectileDamage;
+        float projectileSpeed;
 
         public override void SetStaticDefaults()
         {
-            DisplayName.SetDefault("Ufo Chicken");
+            DisplayName.SetDefault("UFO Chicken");
         }
 
         public override void SetDefaults()
@@ -31,8 +31,8 @@ namespace ChickenInvadersMod.NPCs
             npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
 
             projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
-            speed = 7f;
-            damage = npc.damage / 2;
+            projectileSpeed = 7f;
+            projectileDamage = npc.damage / 2;
         }
 
         public override void NPCLoot()
@@ -63,10 +63,7 @@ namespace ChickenInvadersMod.NPCs
         public override void AI()
         {
             // target nearest player
-            npc.TargetClosest(true);
-            var player = Main.player[npc.target];
-            var targetPosition = npc.HasPlayerTarget ? player.Center : Main.npc[npc.target].Center;
-
+            var targetPosition = npc.GetTargetPos();
             var velocityX = Main.rand.NextFloat(0.05f, 1f);
 
             // move horizontally
@@ -76,7 +73,7 @@ namespace ChickenInvadersMod.NPCs
 
                 if ((npc.position.X - targetPosition.X) < 200 && Main.rand.NextBool(500))
                 {
-                    this.ShootDown(projectileType, speed, damage);
+                    npc.ShootDown(projectileType, projectileSpeed, projectileDamage);
                 }
             }
             else if (targetPosition.X > npc.Center.X && npc.velocity.X < 3) // target on right
@@ -85,7 +82,7 @@ namespace ChickenInvadersMod.NPCs
 
                 if ((targetPosition.X - npc.position.X) < 200 && Main.rand.NextBool(500))
                 {
-                    this.ShootDown(projectileType, speed, damage);
+                    npc.ShootDown(projectileType, projectileSpeed, projectileDamage);
                 }
             }
 

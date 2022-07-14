@@ -7,6 +7,14 @@ namespace ChickenInvadersMod.NPCs
 {
     public class PilotChicken : ModNPC
     {
+        int projectileType;
+        int projectileDamage;
+        float projectileSpeed;
+
+        int interval = 16;
+        int shotsLeft = 2;
+        bool shooting = false;
+
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Pilot Chicken");
@@ -27,6 +35,10 @@ namespace ChickenInvadersMod.NPCs
             npc.buffImmune[BuffID.Confused] = true;
             npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit2").WithVolume(1f).WithPitchVariance(.3f); ;
             npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death2").WithVolume(1f).WithPitchVariance(.3f);
+
+            projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
+            projectileDamage = npc.damage / 2;
+            projectileSpeed = 7f;
         }
 
         public override void FindFrame(int frameHeight)
@@ -63,33 +75,28 @@ namespace ChickenInvadersMod.NPCs
             base.NPCLoot();
         }
 
-        bool shouldShootSecond = false;
-        int timeBetween = 16;
-
         public override void AI()
         {
             npc.TargetClosest();
 
-            int type = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
-            float speed = 8f;
-            int damage = npc.damage / 2;
-
-            // shoot once
-            if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && Main.rand.NextBool(900))
+            if (Main.rand.NextBool(300) || shooting)
             {
-                this.Shoot(type, speed, damage);
-                shouldShootSecond = true;
-            }
+                shooting = true;
+                interval--;
 
-            // decrement timer for second shot
-            if (shouldShootSecond) timeBetween--;
+                // stop shooting afer 2 times
+                if (shotsLeft <= 0)
+                {
+                    shotsLeft = 2;
+                    shooting = false;
+                }
 
-            // shoot twice
-            if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && timeBetween == 0)
-            {
-                this.Shoot(type, speed, damage);
-                timeBetween = 8;
-                shouldShootSecond = false;
+                if (interval <= 0)
+                {
+                    interval = 16;
+                    shotsLeft--;
+                    npc.Shoot(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+                }
             }
             base.AI();
         }
