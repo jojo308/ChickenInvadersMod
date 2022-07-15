@@ -30,7 +30,7 @@ namespace ChickenInvadersMod.NPCs
             npc.HitSound = SoundID.NPCHit1;
             npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chick_Death").WithVolume(1.5f).WithPitchVariance(.3f);
 
-            projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
+            projectileType = ModContent.ProjectileType<Projectiles.GuanoProjectile>();
             projectileDamage = npc.damage / 2;
             projectileSpeed = 5f;
         }
