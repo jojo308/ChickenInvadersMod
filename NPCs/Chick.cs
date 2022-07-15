@@ -20,7 +20,7 @@ namespace ChickenInvadersMod.NPCs
         {
             npc.width = 32;
             npc.height = 32;
-            npc.aiStyle = 23;
+            npc.aiStyle = 2;
             npc.damage = 20;
             npc.defense = 10;
             npc.lifeMax = 75;
@@ -65,7 +65,7 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            npc.TargetClosest();
+            npc.TargetClosest();            
 
             if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && Main.rand.NextBool(900))
             {
