@@ -32,7 +32,7 @@ namespace ChickenInvadersMod.NPCs
             npc.lifeMax = 300;
             npc.aiStyle = 0;
             npc.value = 150f;
-            npc.knockBackResist = -1f;
+            npc.knockBackResist = 0f;
             npc.friendly = false;
             npc.noGravity = true;
             npc.buffImmune[BuffID.Poisoned] = true;

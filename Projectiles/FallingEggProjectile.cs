@@ -19,7 +19,7 @@ namespace ChickenInvadersMod.Projectiles
             projectile.timeLeft = 300;
             projectile.penetrate = 1;
             projectile.ignoreWater = true;
-            projectile.hostile = true;          
+            projectile.hostile = true;
             projectile.tileCollide = true;
         }
 

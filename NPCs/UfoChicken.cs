@@ -99,8 +99,8 @@ namespace ChickenInvadersMod.NPCs
                 npc.velocity.Y *= 0.9f;
             }
 
-            // check for collision                      
-            npc.velocity = Collision.TileCollision(npc.position, npc.velocity, npc.width, npc.height, true, false, 1);
+            // check for collision
+            npc.CheckCollision();
 
             // move
             npc.position += npc.velocity;

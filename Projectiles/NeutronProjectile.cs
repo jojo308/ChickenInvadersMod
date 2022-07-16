@@ -36,7 +36,7 @@ namespace ChickenInvadersMod.Projectiles
             // rotate the projectile to the direction it was shot to
             Vector2 direction = projectile.position - projectile.oldPosition;
             float rotation = (float)Math.Atan2(direction.Y, direction.X);
-            projectile.rotation = rotation + ((float)Math.PI * 0.5f);
+            projectile.rotation = rotation + ((float)Math.PI * 0.5f);            
         }
     }
 }
