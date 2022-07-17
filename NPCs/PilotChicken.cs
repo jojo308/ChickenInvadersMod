@@ -11,7 +11,6 @@ namespace ChickenInvadersMod.NPCs
         int projectileDamage;
         float projectileSpeed;
 
-        int interval = 16;
         int shotsLeft = 2;
         bool shooting = false;
 
@@ -77,12 +76,13 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            npc.TargetClosest();
+            npc.ai[0]--;
 
-            if (Main.rand.NextBool(300) || shooting)
+            if (Main.netMode != NetmodeID.MultiplayerClient && (npc.ai[0] <= 0 || shooting))
             {
                 shooting = true;
-                interval--;
+                npc.ai[0] = Main.rand.NextFloat(240, 480);
+                npc.ai[1]--;
 
                 // stop shooting afer 2 times
                 if (shotsLeft <= 0)
@@ -91,11 +91,11 @@ namespace ChickenInvadersMod.NPCs
                     shooting = false;
                 }
 
-                if (interval <= 0)
+                if (npc.ai[1] <= 0)
                 {
-                    interval = 16;
+                    npc.ai[1] = 16;
                     shotsLeft--;
-                    npc.Shoot(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+                    npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
                 }
             }
             base.AI();

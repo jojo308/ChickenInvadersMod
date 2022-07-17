@@ -70,16 +70,16 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            npc.TargetClosest();
-
+            npc.ai[0]--;
             int type = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
             float speed = 7f;
             int damage = npc.damage / 2;
 
             // shoot eggs 
-            if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && Main.rand.NextBool(900))
+            if (Main.netMode != NetmodeID.MultiplayerClient && npc.ai[0] <= 0)
             {
-                npc.Shoot(npc.Center, type, speed, damage);
+                npc.ai[0] = Main.rand.NextFloat(300, 600);
+                npc.ShootAtPlayer(npc.Center, type, speed, damage);
             }
             base.AI();
         }

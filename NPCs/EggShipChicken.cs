@@ -12,7 +12,6 @@ namespace ChickenInvadersMod.NPCs
         int projectileType;
         int projectileDamage;
         float projectileSpeed;
-        int timeLeft;
 
         public override void SetStaticDefaults()
         {
@@ -27,6 +26,7 @@ namespace ChickenInvadersMod.NPCs
             npc.defense = 15;
             npc.lifeMax = 500;
             npc.aiStyle = 2;
+            npc.defense = 25;
             npc.value = 100f;
             npc.knockBackResist = 0.5f;
             npc.friendly = false;
@@ -34,7 +34,6 @@ namespace ChickenInvadersMod.NPCs
             npc.buffImmune[BuffID.Confused] = true;
             npc.HitSound = SoundID.NPCHit4;
             npc.DeathSound = SoundID.NPCDeath14;
-
             projectileType = ModContent.ProjectileType<Projectiles.NeutronProjectile>();
             projectileSpeed = 7f;
             projectileDamage = npc.damage / 2;
@@ -67,13 +66,13 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            timeLeft--;
+            npc.ai[0]--;
 
             // ocasionally shoot 3 neutrons spaced out 120° between each other 
-            if (Main.rand.NextBool(200) && timeLeft <= 0)
+            if (Main.netMode != NetmodeID.MultiplayerClient && npc.ai[0] <= 0)
             {
-                timeLeft = 60;
-                var degrees = Main.rand.Next(0, 119);
+                npc.ai[0] = Main.rand.NextFloat(200, 600);
+                var degrees = Main.rand.Next(0, 120);
                 Vector2 velocity1 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees));
                 Vector2 velocity2 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees + 120));
                 Vector2 velocity3 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees + 240));
@@ -98,7 +97,6 @@ namespace ChickenInvadersMod.NPCs
 
             // move
             npc.position += npc.velocity;
-
         }
 
         public static Vector2 Rotate(Vector2 v, float delta)

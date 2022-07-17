@@ -87,13 +87,13 @@ namespace ChickenInvadersMod.NPCs
             }
 
             // move vertically
-            if (targetPosition.Y < npc.position.Y + 300) // target above
+            if (targetPosition.Y < npc.position.Y + 200) // target above
             {
                 npc.velocity.Y -= (npc.velocity.Y < 0 && npc.velocity.Y > -2) ? 0.5f : 0.7f;
             }
             else if (targetPosition.Y > npc.position.Y) // target below
             {
-                if (targetPosition.Y > npc.position.Y + 300) npc.velocity.Y += (npc.velocity.Y > 0 && npc.velocity.Y < 1f) ? 0.1f : 0.15f;
+                if (targetPosition.Y > npc.position.Y + 200) npc.velocity.Y += (npc.velocity.Y > 0 && npc.velocity.Y < 1f) ? 0.1f : 0.15f;
 
                 // slows acceleration when moving down to prevent npc from hitting the player
                 npc.velocity.Y *= 0.9f;

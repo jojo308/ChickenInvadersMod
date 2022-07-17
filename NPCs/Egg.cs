@@ -19,7 +19,7 @@ namespace ChickenInvadersMod.NPCs
             npc.aiStyle = 23;
             npc.damage = 20;
             npc.defense = 10;
-            npc.lifeMax = 75;
+            npc.lifeMax = 300;
             npc.value = 200f;
             npc.noGravity = true;
             npc.friendly = false;

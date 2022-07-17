@@ -28,7 +28,7 @@ namespace ChickenInvadersMod.NPCs
         /// <param name="speed">The speed of the projectile</param>
         /// <param name="damage">the damage of the projectile</param>
         /// <param name="kb">the knockback of the projectile</param>
-        public static void Shoot(this NPC npc, Vector2 position, int projectileId, float speed, int damage, float kb = 0f)
+        public static void ShootAtPlayer(this NPC npc, Vector2 position, int projectileId, float speed, int damage, float kb = 0f)
         {
             // target player
             var targetPosition = GetTargetPos(npc);

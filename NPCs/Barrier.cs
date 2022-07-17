@@ -20,7 +20,7 @@ namespace ChickenInvadersMod.NPCs
             npc.width = 64;
             npc.height = 26;
             npc.damage = 10;
-            npc.defense = 20;
+            npc.defense = 25;
             npc.aiStyle = 0;
             npc.noGravity = true;
             npc.knockBackResist = 0f;

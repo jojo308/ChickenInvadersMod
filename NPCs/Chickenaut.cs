@@ -12,7 +12,6 @@ namespace ChickenInvadersMod.NPCs
         int projectileDamage;
         float projectileSpeed;
 
-        int interval = 16;
         int shotsLeft = 3;
         bool shooting = false;
 
@@ -28,8 +27,8 @@ namespace ChickenInvadersMod.NPCs
             npc.height = 96;
             npc.aiStyle = 2;
             npc.damage = 28;
-            npc.defense = 10;
-            npc.lifeMax = 125;
+            npc.defense = 20;
+            npc.lifeMax = 600;
             npc.value = 50f;
             npc.friendly = false;
             npc.buffImmune[BuffID.Confused] = true;
@@ -83,10 +82,13 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            if (Main.rand.NextBool(300) || shooting)
+            npc.ai[0]--;
+
+            if (Main.netMode != NetmodeID.MultiplayerClient && (npc.ai[0] <= 0 || shooting))
             {
                 shooting = true;
-                interval--;
+                npc.ai[0] = Main.rand.NextFloat(150, 400);
+                npc.ai[1]--;
 
                 if (shotsLeft <= 0)
                 {
@@ -94,9 +96,9 @@ namespace ChickenInvadersMod.NPCs
                     shooting = false;
                 }
 
-                if (interval <= 0)
+                if (npc.ai[1] <= 0)
                 {
-                    interval = 16;
+                    npc.ai[1] = 16;
                     shotsLeft--;
                     ShootNeutron(npc.Bottom);
                 }
@@ -106,7 +108,7 @@ namespace ChickenInvadersMod.NPCs
         public void ShootNeutron(Vector2 position)
         {
             Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(5f).WithPitchVariance(.3f), position);
-            npc.Shoot(position, projectileType, projectileSpeed, projectileDamage);
+            npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
         }
     }
 }

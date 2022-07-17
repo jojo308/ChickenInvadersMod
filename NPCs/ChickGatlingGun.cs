@@ -13,7 +13,6 @@ namespace ChickenInvadersMod.NPCs
         int projectileDamage;
         float projectileSpeed;
 
-        int interval = 16;
         int shotsLeft = 3;
         bool shooting = false;
 
@@ -28,8 +27,8 @@ namespace ChickenInvadersMod.NPCs
             npc.width = 78;
             npc.height = 127;
             npc.damage = 50;
-            npc.defense = 15;
-            npc.lifeMax = 300;
+            npc.defense = 25;
+            npc.lifeMax = 750;
             npc.aiStyle = 0;
             npc.value = 150f;
             npc.knockBackResist = 0f;
@@ -79,6 +78,8 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
+            npc.ai[0]--;
+
             // find target
             var targetPosition = npc.GetTargetPos();
 
@@ -88,14 +89,15 @@ namespace ChickenInvadersMod.NPCs
             npc.rotation = rotation + ((float)Math.PI * 0.5f);
 
             // shoot target occasionally
-            if (Main.rand.NextBool(300) || shooting)
+            if (Main.netMode != NetmodeID.MultiplayerClient && (npc.ai[0] <= 0 || shooting))
             {
+                npc.ai[0] = Main.rand.NextFloat(240, 420);
+                npc.ai[1]--;
+                shooting = true;
+
                 // eggs should be shot from the gatling gun. Since this npc rotates depending on the players position, the
                 // start position of the egg projectile should be rotated too
                 var position = Vector2.Transform(npc.Bottom - npc.Center, Matrix.CreateRotationZ(npc.rotation)) + npc.Center;
-
-                shooting = true;
-                interval--;
 
                 // stop shooting afer 3 times
                 if (shotsLeft <= 0)
@@ -104,11 +106,11 @@ namespace ChickenInvadersMod.NPCs
                     shooting = false;
                 }
 
-                if (interval <= 0)
+                if (npc.ai[1] <= 0)
                 {
-                    interval = 16;
+                    npc.ai[1] = 16;
                     shotsLeft--;
-                    npc.Shoot(position, projectileType, projectileSpeed, projectileDamage);
+                    npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
                 }
             }
 

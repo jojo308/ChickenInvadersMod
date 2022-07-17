@@ -9,7 +9,7 @@ namespace ChickenInvadersMod
 {
     public class CIWorld : ModWorld
     {
-        private static int WaveRequiredKillCount = 50;
+        private static int WaveRequiredKillCount = 25;
         private static int MaxWaves = 5;
         private static Color DefaultColor = Color.MediumPurple;
 
@@ -30,6 +30,11 @@ namespace ChickenInvadersMod
                 ModContent.NPCType<NPCs.Chicken>(),
                 ModContent.NPCType<NPCs.PilotChicken>(),
                 ModContent.NPCType<NPCs.UfoChicken>(),
+                ModContent.NPCType<NPCs.Chickenaut>(),
+                ModContent.NPCType<NPCs.ChickGatlingGun>(),
+                ModContent.NPCType<NPCs.EggShipChicken>(),
+                ModContent.NPCType<NPCs.Egg>(),
+                ModContent.NPCType<NPCs.Barrier>()
             };
         }
 
@@ -75,7 +80,6 @@ namespace ChickenInvadersMod
         /// </summary>
         /// <param name="position">The position where the invasion is happening</param>
         /// <returns>true if the invasion was started, false otherwise</returns>
-
         public static bool StartChickenInvasion(Vector2 position)
         {
             if (ChickenInvasionActive && Main.invasionType == -1 || Main.invasionType != 0)
@@ -164,10 +168,10 @@ namespace ChickenInvadersMod
 
             switch (Main.invasionProgressWave)
             {
-                case 1: ChatUtils.SendMessage("Wave 1: Chicks and chickens", DefaultColor); break;
-                case 2: ChatUtils.SendMessage("Wave 2: Chicks, chickens and Pilot chickens", DefaultColor); break;
-                case 3: ChatUtils.SendMessage("Wave 3: Chickens, Pilot chickens and UFO chickens", DefaultColor); break;
-                case 4: ChatUtils.SendMessage("Wave 4: Chicken Overload", DefaultColor); break;
+                case 1: ChatUtils.SendMessage("Wave 1: Chicks, Chickens and Pilot Chickens", DefaultColor); break;
+                case 2: ChatUtils.SendMessage("Wave 2: Chicks, Chickens, Pilot Chickens and Egg Ship Chickens", DefaultColor); break;
+                case 3: ChatUtils.SendMessage("Wave 3: Pilot Chickens, Eggs, UFO chickens, Chickenaut and Egg Ship Chickens", DefaultColor); break;
+                case 4: ChatUtils.SendMessage("Wave 4: Pilot Chickens, Eggs, UFO Chickens, Chickenauts, Egg Ship Chicken and ChickGatlingGun", DefaultColor); break;
                 default: ChatUtils.SendMessage("Wave 5: Boss battle", DefaultColor); break;
             }
         }
@@ -189,11 +193,11 @@ namespace ChickenInvadersMod
         /// </summary>
         public static void ReportInvasionProgress()
         {
-            if (Main.netMode == NetmodeID.SinglePlayer)
+            if (Main.netMode != NetmodeID.MultiplayerClient)
             {
                 if (ChickenInvasionActive)
                 {
-                    Main.ReportInvasionProgress(WaveRequiredKillCount - Main.invasionSize, 50, 0, Main.invasionProgressWave);
+                    Main.ReportInvasionProgress(WaveRequiredKillCount - Main.invasionSize, WaveRequiredKillCount, 0, Main.invasionProgressWave);
                 }
             }
             else
@@ -203,7 +207,7 @@ namespace ChickenInvadersMod
                 {
                     if (PlayerNearInvasion(p))
                     {
-                        NetMessage.SendData(MessageID.InvasionProgressReport, p.whoAmI, -1, null, WaveRequiredKillCount - Main.invasionSize, 50, 0, Main.invasionProgressWave, 0, 0, 0);
+                        NetMessage.SendData(MessageID.InvasionProgressReport, p.whoAmI, -1, null, WaveRequiredKillCount - Main.invasionSize, WaveRequiredKillCount, 0, Main.invasionProgressWave, 0, 0, 0);
                     }
                 }
             }
