@@ -45,14 +45,18 @@ namespace ChickenInvadersMod.NPCs
         /// <param name="npc">The npc that shoots the projectile</param>
         public static void ShootDown(this NPC npc, int projectileId, float speed, int damage, float kb = 0f)
         {
-            // target down
-            Vector2 pos = npc.Bottom;
-            Vector2 target = new Vector2(pos.X, pos.Y + 1);
-            Vector2 dir = target - pos;
+            ShootDown(npc, npc.Bottom, projectileId, speed, damage, 0f);
+        }
+
+        public static void ShootDown(this NPC _, Vector2 position, int projectileId, float speed, int damage, float kb = 0f)
+        {
+            // target down           
+            Vector2 target = new Vector2(position.X, position.Y + 1);
+            Vector2 dir = target - position;
             dir.Normalize();
 
             // shoot
-            Projectile.NewProjectile(pos, dir * speed, projectileId, damage, kb, Main.myPlayer);
+            Projectile.NewProjectile(position, dir * speed, projectileId, damage, kb, Main.myPlayer);
         }
 
         /// <summary>
