@@ -7,6 +7,7 @@ using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
+    [AutoloadBossHead]
     public class CIBoss1 : ModNPC
     {
         const int bulkEggCount = 10;
@@ -115,8 +116,8 @@ namespace ChickenInvadersMod.NPCs
             if (!IsAttacking)
             {
                 TimeLeft++;
-                //npc.ai[aiAttackType] = Main.rand.Next(1, 5);
-                AttackType = laserBeam;
+                AttackType = Main.rand.Next(1, 5);
+                //AttackType = laserBeam;
             }
 
             if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft >= 300 || IsAttacking))
@@ -152,10 +153,11 @@ namespace ChickenInvadersMod.NPCs
         {
             Interval++;
 
-            // laser should only be shot once, because the 'projectile' will handle itself
+            // Shoot laser and than wait a few seconds. laser should only be shot once, because the 'projectile' will handle itself
             if (Interval == 1)
             {
-                int proj = Projectile.NewProjectile(npc.Center.X, npc.Center.Y + 95, 0, 0, mod.ProjectileType("ExampleLaser"), npc.damage, 0f, 0, npc.whoAmI, npc.whoAmI);
+                int proj = Projectile.NewProjectile(npc.Center.X, npc.Center.Y + 95, 0, 0, mod.ProjectileType("LaserBeam"), npc.damage, 0f, 0, npc.whoAmI, npc.whoAmI);
+                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
                 NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
             }
 

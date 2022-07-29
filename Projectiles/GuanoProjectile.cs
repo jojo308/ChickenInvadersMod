@@ -14,8 +14,8 @@ namespace ChickenInvadersMod.Projectiles
 
         public override void SetDefaults()
         {
-            projectile.width = 14; //32
-            projectile.height = 23; //32
+            projectile.width = 14;
+            projectile.height = 23;
             projectile.ranged = true;
             projectile.timeLeft = 300;
             projectile.penetrate = 1;
