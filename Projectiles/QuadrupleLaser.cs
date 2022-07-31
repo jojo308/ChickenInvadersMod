@@ -2,25 +2,14 @@
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.Enums;
-using Terraria.ModLoader;
-using System.Collections.Generic;
-using System;
 
 namespace ChickenInvadersMod.Projectiles
 {
     /// <summary>
     /// A laser that shoots in four directions, 90 degrees from each other, and rotates them
     /// </summary>
-    public class QuadrupleLaser : ModProjectile
+    public class QuadrupleLaser : BaseLaser
     {
-        /// <summary>
-        /// The NPC that owns this projectile
-        /// </summary>      
-        public NPC Owner
-        {
-            get => Main.npc[(int)projectile.ai[0]];
-        }
-
         /// <summary>
         /// The rotation of the laser (in radians)
         /// </summary>       
@@ -30,17 +19,7 @@ namespace ChickenInvadersMod.Projectiles
             set => projectile.ai[1] = value;
         }
 
-        /// <summary>
-        /// The distance between the laser and the ground
-        /// </summary>
-        private float Distance = 50f;
-
-        /// <summary>
-        /// returns te end point of the laser
-        /// </summary>
-        /// <param name="npc"></param>
-        /// <returns></returns>
-        private Vector2 GetEndPoint(NPC npc) => npc.Center + projectile.velocity * Distance;
+        public override Vector2 GetEndPoint(NPC npc) => npc.Center + projectile.velocity * Distance;
 
         public override void SetStaticDefaults()
         {
@@ -50,20 +29,11 @@ namespace ChickenInvadersMod.Projectiles
 
         public override void SetDefaults()
         {
+            base.SetDefaults();
             projectile.width = 34;
             projectile.height = 64;
             projectile.hostile = true;
-            projectile.penetrate = -1;
-            projectile.tileCollide = false;
-            projectile.hide = true;
-            projectile.magic = true;
             projectile.timeLeft = 240;
-        }
-
-        public override void DrawBehind(int index, List<int> drawCacheProjsBehindNPCsAndTiles, List<int> drawCacheProjsBehindNPCs, List<int> drawCacheProjsBehindProjectiles, List<int> drawCacheProjsOverWiresUI)
-        {
-            drawCacheProjsBehindNPCs.Add(index);
-            base.DrawBehind(index, drawCacheProjsBehindNPCsAndTiles, drawCacheProjsBehindNPCs, drawCacheProjsBehindProjectiles, drawCacheProjsOverWiresUI);
         }
 
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
@@ -72,14 +42,7 @@ namespace ChickenInvadersMod.Projectiles
             return false;
         }
 
-        /// <summary>
-        /// Draws the laser
-        /// </summary>
-        /// <param name="spriteBatch">The sprite batch to use</param>
-        /// <param name="texture">The texture to use</param>
-        /// <param name="start">Where the laser should start</param>
-        /// <param name="rotation">the rotation of the laser</param>
-        public void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = 0f)
+        public override void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int offset = 0)
         {
             float r = projectile.velocity.ToRotation() + rotation;
             int sourceFrameY = projectile.frame * projectile.height;
@@ -108,6 +71,8 @@ namespace ChickenInvadersMod.Projectiles
             Utils.PlotTileLine(start, start + (Distance + remaining) * projectile.velocity, (projectile.width + 16) * projectile.scale, DelegateMethods.CutTiles);
         }
 
+        public override bool? CanCutTiles() => true;
+
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
             NPC npc = Owner;
@@ -115,40 +80,7 @@ namespace ChickenInvadersMod.Projectiles
             return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), npc.Center, GetEndPoint(npc), projectile.width, ref point);
         }
 
-        public override void AI()
-        {
-            NPC npc = Owner;
-
-            // Kill the projectile of the npc is no longer active (alive)
-            if (!npc.active) projectile.Kill();
-
-            FindFrame();
-            RotateLaser(npc);
-            SetLaserPosition(npc);
-            CastLights(npc);
-        }
-
-        private void FindFrame()
-        {
-            int frameSpeed = 8;
-
-            projectile.frameCounter++;
-            if (projectile.frameCounter >= frameSpeed)
-            {
-                projectile.frameCounter = 0;
-                projectile.frame++;
-                if (projectile.frame >= Main.projFrames[projectile.type])
-                {
-                    projectile.frame = 0;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Updates the rotation of the projectile
-        /// </summary>
-        /// <param name="npc">The NPC that shoots this projectile</param>
-        private void RotateLaser(NPC npc)
+        public override void UpdateVelocity(NPC npc)
         {
             var position = npc.Center;
             Vector2 target = (position * Distance).RotatedBy(Rotation += MathHelper.ToRadians(1), position);
@@ -159,13 +91,9 @@ namespace ChickenInvadersMod.Projectiles
             projectile.netUpdate = true;
         }
 
-        /// <summary>
-        /// Sets the end of the laser position based on where it collides with something
-        /// </summary>
-        /// <param name="npc">The NPC that shoots this projectile</param>
-        private void SetLaserPosition(NPC npc)
+        public override void SetLaserPosition(NPC npc)
         {
-            for (Distance = 0; Distance <= 2200f; Distance += 5f)
+            for (Distance = 0; Distance <= MaxDistance; Distance += 5f)
             {
                 var end = GetEndPoint(npc);
                 end = new Vector2(end.X, end.Y - 1);
@@ -180,17 +108,9 @@ namespace ChickenInvadersMod.Projectiles
             }
         }
 
-        /// <summary>
-        /// Casts light for the laser
-        /// </summary>
-        /// <param name="npc">The NPC that shoots this projectile</param>
-        private void CastLights(NPC npc)
+        public override void CastLights(NPC npc)
         {
             Utils.PlotTileLine(npc.Center, GetEndPoint(npc), 22, DelegateMethods.CastLight);
         }
-
-        public override bool ShouldUpdatePosition() => false;
-
-        public override bool? CanCutTiles() => true;
     }
 }
