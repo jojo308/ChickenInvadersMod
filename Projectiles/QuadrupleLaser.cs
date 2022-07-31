@@ -4,15 +4,14 @@ using Terraria;
 using Terraria.Enums;
 using Terraria.ModLoader;
 using System.Collections.Generic;
+using System;
 
 namespace ChickenInvadersMod.Projectiles
 {
-    // Projectile was mode using code from the Example Mod https://github.com/tModLoader/tModLoader/blob/1.4/ExampleMod/Old/Projectiles/ExampleLaser.cs
-
     /// <summary>
-    /// A laser that shoots straight down for a few seconds
+    /// A laser that shoots in four directions, 90 degrees from each other, and rotates them
     /// </summary>
-    public class LaserBeam : ModProjectile
+    public class QuadrupleLaser : ModProjectile
     {
         /// <summary>
         /// The NPC that owns this projectile
@@ -22,6 +21,18 @@ namespace ChickenInvadersMod.Projectiles
             get => Main.npc[(int)projectile.ai[0]];
         }
 
+        /// <summary>
+        /// The rotation of the laser (in radians)
+        /// </summary>       
+        public float Rotation
+        {
+            get => projectile.ai[1];
+            set => projectile.ai[1] = value;
+        }
+
+        /// <summary>
+        /// The distance between the laser and the ground
+        /// </summary>
         private float Distance = 50f;
 
         /// <summary>
@@ -29,18 +40,18 @@ namespace ChickenInvadersMod.Projectiles
         /// </summary>
         /// <param name="npc"></param>
         /// <returns></returns>
-        private Vector2 GetEndPoint(NPC npc) => npc.Bottom + projectile.velocity * Distance;
+        private Vector2 GetEndPoint(NPC npc) => npc.Center + projectile.velocity * Distance;
 
         public override void SetStaticDefaults()
         {
-            DisplayName.SetDefault("Laser Beam");
+            DisplayName.SetDefault("Quadruple Laser");
             Main.projFrames[projectile.type] = 6;
         }
 
         public override void SetDefaults()
         {
-            projectile.width = 46;
-            projectile.height = 24;
+            projectile.width = 34;
+            projectile.height = 64;
             projectile.hostile = true;
             projectile.penetrate = -1;
             projectile.tileCollide = false;
@@ -57,9 +68,7 @@ namespace ChickenInvadersMod.Projectiles
 
         public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
         {
-            var npc = Owner;
-            var start = Vector2.Transform(npc.Bottom - npc.Center, Matrix.CreateRotationZ(npc.rotation)) + npc.Center;
-            DrawLaser(spriteBatch, Main.projectileTexture[projectile.type], start, -1.57f, 1f, 0);
+            DrawLaser(spriteBatch, Main.projectileTexture[projectile.type], Owner.Center, -1.57f);
             return false;
         }
 
@@ -70,9 +79,7 @@ namespace ChickenInvadersMod.Projectiles
         /// <param name="texture">The texture to use</param>
         /// <param name="start">Where the laser should start</param>
         /// <param name="rotation">the rotation of the laser</param>
-        /// <param name="scale">The scale of the laser</param>
-        /// <param name="transDist">???</param>
-        public void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int transDist = 50)
+        public void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = 0f)
         {
             float r = projectile.velocity.ToRotation() + rotation;
             int sourceFrameY = projectile.frame * projectile.height;
@@ -80,21 +87,21 @@ namespace ChickenInvadersMod.Projectiles
             int i;
 
             // Draw the laser
-            for (i = transDist; i <= Distance; i += step)
+            for (i = 64; i <= Distance; i += step)
             {
-                Color color = i < transDist ? Color.Transparent : Color.White;
+                Color color = Color.White;
                 var origin = start + i * projectile.velocity;
 
                 spriteBatch.Draw(texture, origin - Main.screenPosition, new Rectangle(0, sourceFrameY, projectile.width, projectile.height),
-                    color, r, new Vector2(projectile.width * .5f, projectile.height * .5f), scale, 0, 0);
+                    color, r, new Vector2(projectile.width * .5f, projectile.height * .5f), 1f, 0, 0);
             }
 
-            // get the remaning distance between the last drawn laser sprite and the ground
-            float remaining = i >= Distance ? i - Distance : Distance - i;
+            // get the remaning distance between the last drawn laser sprite and the ground          
+            float remaining = i - Distance;
 
             // Draw the last part which has the same height as the remaining distance
-            spriteBatch.Draw(texture, start + (Distance + remaining) * projectile.velocity - Main.screenPosition, new Rectangle(0, sourceFrameY, projectile.width, projectile.height - (int)remaining),
-                    Color.White, r, new Vector2(projectile.width * .5f, projectile.height * .5f), scale, 0, 1);
+            spriteBatch.Draw(texture, start + (Distance - remaining * 1.25f) * projectile.velocity - Main.screenPosition, new Rectangle(0, sourceFrameY, projectile.width, projectile.height - (int)remaining),
+                  Color.White, r, new Vector2(projectile.width * .5f, projectile.height * .5f), 1f, 0, 0);
 
             // cuts tiles. This code belongs in the CutTiles() method, but that method doesn't get called for some reason. So it is placed here...
             DelegateMethods.tilecut_0 = TileCuttingContext.AttackProjectile;
@@ -105,7 +112,7 @@ namespace ChickenInvadersMod.Projectiles
         {
             NPC npc = Owner;
             float point = 0f;
-            return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), npc.Bottom, GetEndPoint(npc), projectile.width, ref point);
+            return Collision.CheckAABBvLineCollision(targetHitbox.TopLeft(), targetHitbox.Size(), npc.Center, GetEndPoint(npc), projectile.width, ref point);
         }
 
         public override void AI()
@@ -116,10 +123,9 @@ namespace ChickenInvadersMod.Projectiles
             if (!npc.active) projectile.Kill();
 
             FindFrame();
-            UpdateVelocity(npc);
+            RotateLaser(npc);
             SetLaserPosition(npc);
             CastLights(npc);
-            projectile.position += projectile.velocity;
         }
 
         private void FindFrame()
@@ -139,16 +145,17 @@ namespace ChickenInvadersMod.Projectiles
         }
 
         /// <summary>
-        /// Updates the velocity of the projectile
+        /// Updates the rotation of the projectile
         /// </summary>
         /// <param name="npc">The NPC that shoots this projectile</param>
-        private void UpdateVelocity(NPC npc)
+        private void RotateLaser(NPC npc)
         {
-            var position = npc.Bottom;
-            Vector2 target = new Vector2(position.X, position.Y + 1);
+            var position = npc.Center;
+            Vector2 target = (position * Distance).RotatedBy(Rotation += MathHelper.ToRadians(1), position);
             Vector2 diff = target - position;
             diff.Normalize();
             projectile.velocity = diff;
+            projectile.position += projectile.velocity;
             projectile.netUpdate = true;
         }
 
@@ -160,10 +167,14 @@ namespace ChickenInvadersMod.Projectiles
         {
             for (Distance = 0; Distance <= 2200f; Distance += 5f)
             {
-                var start = new Vector2(npc.Bottom.X, npc.Bottom.Y - 1);
-                if (!Collision.CanHit(start, 1, 1, GetEndPoint(npc), 1, 1))
+                var end = GetEndPoint(npc);
+                end = new Vector2(end.X, end.Y - 1);
+                if (!Collision.CanHit(npc.Center, 1, 1, end, 1, 1))
                 {
                     Distance -= 5f;
+
+                    if (Distance < 0) Distance = 0;
+
                     break;
                 }
             }
@@ -175,27 +186,11 @@ namespace ChickenInvadersMod.Projectiles
         /// <param name="npc">The NPC that shoots this projectile</param>
         private void CastLights(NPC npc)
         {
-            Utils.PlotTileLine(npc.Bottom, GetEndPoint(npc), 22, DelegateMethods.CastLight);
+            Utils.PlotTileLine(npc.Center, GetEndPoint(npc), 22, DelegateMethods.CastLight);
         }
 
         public override bool ShouldUpdatePosition() => false;
 
         public override bool? CanCutTiles() => true;
-
-        // this method doesn't get called
-        //public override void CutTiles()
-        //{
-        //    var npc = Owner;
-        //    var start = Vector2.Transform(npc.Bottom - npc.Center, Matrix.CreateRotationZ(npc.rotation)) + npc.Center;
-        //    var remaining = 0;
-
-        //    for (var i = 0; i <= Distance; i += projectile.height)
-        //    {
-        //        remaining = i;
-        //    }
-
-        //    DelegateMethods.tilecut_0 = TileCuttingContext.AttackProjectile;
-        //    Utils.PlotTileLine(start, start + (Distance + remaining) * projectile.velocity, (projectile.width + 16) * projectile.scale, DelegateMethods.CutTiles);
-        //}
     }
 }

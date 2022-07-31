@@ -10,9 +10,16 @@ namespace ChickenInvadersMod.NPCs
     [AutoloadBossHead]
     public class CIBoss1 : ModNPC
     {
-        const int bulkEggCount = 10;
+        const float maxRotation = 0.262f; // this is 15 degrees in radians
+        const int bulkEggCount = 16;
         const int guanoCount = 30;
-        int shots;
+
+        // Attack types
+        const float idle = 0f;
+        const float laserBeam = 1f;
+        const float guanoSpray = 2f;
+        const float bulkEggs = 3f;
+        const float quadrupleLaser = 4f;
 
         // ai
         public float TimeLeft
@@ -33,14 +40,10 @@ namespace ChickenInvadersMod.NPCs
             set => npc.ai[2] = value;
         }
 
-        public bool IsAttacking { get { return TimeLeft == -1; } }
+        int shots = 0;
+        QuadrupleLaser? laser;
 
-        // Attack types
-        const float idle = 0f;
-        const float laserBeam = 1f;
-        const float guanoSpray = 2f;
-        const float bulkEggs = 3f;
-        const float quadrupleLaser = 4f;
+        public bool IsAttacking { get { return TimeLeft == -1; } }
 
         public override void SetStaticDefaults()
         {
@@ -102,13 +105,11 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            var rotationMax = MathHelper.ToRadians(15);
-
-            if (npc.velocity.X < 0 && npc.rotation > rotationMax * -1)
+            if (npc.velocity.X < 0 && npc.rotation > maxRotation * -1)
             {
                 npc.rotation -= 0.01f; // rotate to left
             }
-            else if (npc.velocity.X > 0 && npc.rotation < rotationMax)
+            else if (npc.velocity.X > 0 && npc.rotation < maxRotation)
             {
                 npc.rotation += 0.01f; // rotate to right
             }
@@ -117,7 +118,6 @@ namespace ChickenInvadersMod.NPCs
             {
                 TimeLeft++;
                 AttackType = Main.rand.Next(1, 5);
-                //AttackType = laserBeam;
             }
 
             if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft >= 300 || IsAttacking))
@@ -153,7 +153,7 @@ namespace ChickenInvadersMod.NPCs
         {
             Interval++;
 
-            // Shoot laser and than wait a few seconds. laser should only be shot once, because the 'projectile' will handle itself
+            // Shoot laser and than wait a few seconds
             if (Interval == 1)
             {
                 int proj = Projectile.NewProjectile(npc.Center.X, npc.Center.Y + 95, 0, 0, mod.ProjectileType("LaserBeam"), npc.damage, 0f, 0, npc.whoAmI, npc.whoAmI);
@@ -184,7 +184,7 @@ namespace ChickenInvadersMod.NPCs
                 Interval = 0;
                 shots++;
                 var degrees = Main.rand.Next(0, 360);
-                Vector2 velocity1 = new Vector2(0, -3f).RotatedBy(MathHelper.ToRadians(degrees));
+                Vector2 velocity1 = new Vector2(0, -6f).RotatedBy(MathHelper.ToRadians(degrees));
                 Projectile.NewProjectile(npc.Center, velocity1, ModContent.ProjectileType<GuanoProjectile>(), npc.damage, 0f, Main.myPlayer);
                 Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
             }
@@ -216,9 +216,42 @@ namespace ChickenInvadersMod.NPCs
         /// </summary>
         private void HandleQuadrupleLaser()
         {
-            // todo implement
-            ChatUtils.SendMessage("HandleQuadrupleLaser");
-            Reset();
+            Interval++;
+
+            if (!laser.HasValue)
+            {
+                laser = new QuadrupleLaser(Main.rand.NextFloat(-90, 90));
+            }
+
+            if (laser.HasValue)
+            {
+                // show warning
+                if (Interval == 1)
+                {
+
+                    int proj = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation1);
+                    int proj2 = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation2);
+                    int proj3 = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation3);
+                    int proj4 = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation4);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj, proj2, proj3, proj4);
+                }
+
+                // Shoot laser and than wait a few seconds
+                if (Interval == 60)
+                {
+                    int proj = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation1);
+                    int proj2 = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation2);
+                    int proj3 = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation3);
+                    int proj4 = Projectile.NewProjectile(npc.Center.X, npc.Center.Y, 0, 0, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation4);
+                    Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj, proj2, proj3, proj4);
+                }
+            }
+
+            if (Interval >= 300)
+            {
+                Reset();
+            }
         }
 
         /// <summary>
@@ -230,6 +263,21 @@ namespace ChickenInvadersMod.NPCs
             Interval = 0;
             AttackType = idle;
             shots = 0;
+            laser = default;
         }
+    }
+
+    public struct QuadrupleLaser
+    {
+        public readonly float Degrees;
+        public QuadrupleLaser(float degrees)
+        {
+            Degrees = degrees;
+        }
+
+        public float Rotation1 { get => MathHelper.ToRadians(Degrees); }
+        public float Rotation2 { get => MathHelper.ToRadians(Degrees + 90); }
+        public float Rotation3 { get => MathHelper.ToRadians(Degrees + 180); }
+        public float Rotation4 { get => MathHelper.ToRadians(Degrees + 270); }
     }
 }
