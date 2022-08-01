@@ -19,6 +19,8 @@ namespace ChickenInvadersMod.Projectiles
             set => projectile.ai[1] = value;
         }
 
+        public bool Clockwise => projectile.localAI[0] == 1;
+
         public override Vector2 GetEndPoint(NPC npc) => npc.Center + projectile.velocity * Distance;
 
         public override void SetStaticDefaults()
@@ -83,7 +85,8 @@ namespace ChickenInvadersMod.Projectiles
         public override void UpdateVelocity(NPC npc)
         {
             var position = npc.Center;
-            Vector2 target = (position * Distance).RotatedBy(Rotation += MathHelper.ToRadians(1), position);
+            var radians = Clockwise ? Rotation += MathHelper.ToRadians(1) : Rotation -= MathHelper.ToRadians(1);
+            Vector2 target = (position * Distance).RotatedBy(radians, position);
             Vector2 diff = target - position;
             diff.Normalize();
             projectile.velocity = diff;

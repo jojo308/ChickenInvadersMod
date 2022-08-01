@@ -113,7 +113,7 @@ namespace ChickenInvadersMod.NPCs
                 var other = Main.npc[i];
 
                 // Check if npc is chicken
-                if (other.type != npc.type && other.whoAmI != npc.whoAmI && CIWorld.Enemies.Contains(other.type))
+                if (other.type != npc.type && other.whoAmI != npc.whoAmI && CIWorld.Enemies.ContainsKey(other.type))
                 {
                     var dist = Vector2.Distance(npc.Center, other.Center);
                     if (dist < closest)

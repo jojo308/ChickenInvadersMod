@@ -8,7 +8,7 @@ using Terraria.Utilities;
 namespace ChickenInvadersMod.NPCs
 {
     [AutoloadBossHead]
-    public class CIBoss1 : ModNPC
+    public class SuperChicken : ModNPC
     {
         const float maxRotation = 0.262f; // this is 15 degrees in radians
         const int bulkEggCount = 16;
@@ -60,7 +60,7 @@ namespace ChickenInvadersMod.NPCs
             npc.aiStyle = 2;
             npc.damage = 50;
             npc.defense = 40;
-            npc.lifeMax = 1000;
+            npc.lifeMax = 10000;
             npc.value = 50f;
             npc.knockBackResist = 0f;
             npc.friendly = false;
@@ -70,6 +70,10 @@ namespace ChickenInvadersMod.NPCs
             npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
         }
 
+        public override int SpawnNPC(int tileX, int tileY)
+        {
+            return base.SpawnNPC(tileX, tileY - 50);
+        }
         //public override void FindFrame(int frameHeight)
         //{
         //    npc.frameCounter++;
@@ -103,6 +107,16 @@ namespace ChickenInvadersMod.NPCs
             }
 
             base.NPCLoot();
+        }
+
+        public override float SpawnChance(NPCSpawnInfo spawnInfo)
+        {
+            if (spawnInfo.invasion && Main.invasionProgressWave == 5)
+            {
+                return SpawnCondition.Invasion.Chance;
+            }
+
+            return 0f;
         }
 
         public override void AI()
@@ -220,6 +234,11 @@ namespace ChickenInvadersMod.NPCs
         {
             Interval++;
 
+            if (Interval >= 300)
+            {
+                Reset();
+            }
+
             // set value for laser
             if (!laser.HasValue)
             {
@@ -231,6 +250,7 @@ namespace ChickenInvadersMod.NPCs
                 // show warning
                 if (Interval == 1)
                 {
+
                     int proj = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation1);
                     int proj2 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation2);
                     int proj3 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation3);
@@ -241,18 +261,19 @@ namespace ChickenInvadersMod.NPCs
                 // Shoot laser and than wait a few seconds
                 if (Interval == 60)
                 {
+                    int clockwise = Main.rand.Next(0, 2);
+                    ChatUtils.SendMessage("clockwise:" + clockwise);
                     int proj = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation1);
                     int proj2 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation2);
                     int proj3 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation3);
                     int proj4 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation4);
                     Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                    Main.projectile[proj].localAI[0] = clockwise;
+                    Main.projectile[proj2].localAI[0] = clockwise;
+                    Main.projectile[proj3].localAI[0] = clockwise;
+                    Main.projectile[proj4].localAI[0] = clockwise;
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj, proj2, proj3, proj4);
                 }
-            }
-
-            if (Interval >= 300)
-            {
-                Reset();
             }
         }
 

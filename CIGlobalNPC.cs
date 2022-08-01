@@ -5,13 +5,22 @@ using Terraria.ModLoader;
 namespace ChickenInvadersMod
 {
     public class CIGlobalNPC : GlobalNPC
-    {
+    {      
         public override void EditSpawnRate(Player player, ref int spawnRate, ref int maxSpawns)
         {
             if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(player))
             {
-                spawnRate = 20;
-                maxSpawns = 11;
+                // do not spawn any NPCs if the boss has spawned
+                if (NPC.AnyNPCs(mod.NPCType("SuperChicken")))
+                {
+                    spawnRate = 0;
+                    maxSpawns = 0;
+                }
+                else
+                {
+                    spawnRate = 30;
+                    maxSpawns = 10;
+                }
             }
         }
 
@@ -58,14 +67,8 @@ namespace ChickenInvadersMod
                     pool.Add(ModContent.NPCType<NPCs.ChickGatlingGun>(), 1f);
                 }
                 else if (Main.invasionProgressWave == 5)
-                {
-                    pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 1f);
-                    pool.Add(ModContent.NPCType<NPCs.Egg>(), 1f);
-                    pool.Add(ModContent.NPCType<NPCs.UfoChicken>(), 1f);
-                    pool.Add(ModContent.NPCType<NPCs.Barrier>(), 2f);
-                    pool.Add(ModContent.NPCType<NPCs.Chickenaut>(), 2f);
-                    pool.Add(ModContent.NPCType<NPCs.EggShipChicken>(), 2f);
-                    pool.Add(ModContent.NPCType<NPCs.ChickGatlingGun>(), 1.25f);
+                {                                  
+                        pool.Add(ModContent.NPCType<NPCs.SuperChicken>(), 1f);                   
                 }
             }
         }
