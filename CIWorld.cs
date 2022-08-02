@@ -14,7 +14,7 @@ namespace ChickenInvadersMod
         private static Color DefaultColor = Color.MediumPurple;
 
         public static bool ChickenInvasionActive = false;
-        public static bool DownedBoss = false;
+        public static bool DownedSuperChicken = false;
         public static Vector2 SpawnLocation;
 
         // The required amount of points for each wave
@@ -59,7 +59,7 @@ namespace ChickenInvadersMod
         {
             base.Initialize();
             ChickenInvasionActive = false;
-            DownedBoss = false;
+            DownedSuperChicken = false;
 
             Enemies = new Dictionary<int, int>
             {
@@ -81,7 +81,7 @@ namespace ChickenInvadersMod
             return new TagCompound
             {
                 { "CIActive", ChickenInvasionActive},
-                { "DownedBoss", DownedBoss },
+                { "DownedSuperChicken", DownedSuperChicken },
                 { "SpawnX", SpawnLocation.X },
                 { "SpawnY", SpawnLocation.Y }
             };
@@ -90,7 +90,7 @@ namespace ChickenInvadersMod
         public override void Load(TagCompound tag)
         {
             ChickenInvasionActive = tag.GetBool("CIActive");
-            DownedBoss = tag.GetBool("DownedBoss");
+            DownedSuperChicken = tag.GetBool("DownedSuperChicken");
             var x = tag.GetFloat("SpawnX");
             var y = tag.GetFloat("SpawnY");
             SpawnLocation = new Vector2(x, y);
@@ -100,7 +100,7 @@ namespace ChickenInvadersMod
         {
             BitsByte flags = new BitsByte();
             flags[0] = ChickenInvasionActive;
-            flags[1] = DownedBoss;
+            flags[1] = DownedSuperChicken;
             writer.Write(flags);
             writer.WriteVector2(SpawnLocation);
         }
@@ -109,7 +109,7 @@ namespace ChickenInvadersMod
         {
             BitsByte flags = reader.ReadByte();
             ChickenInvasionActive = flags[0];
-            DownedBoss = flags[1];
+            DownedSuperChicken = flags[1];
             SpawnLocation = reader.ReadVector2();
         }
 
@@ -138,7 +138,6 @@ namespace ChickenInvadersMod
             Main.invasionX = SpawnLocation.X;
             Main.FakeLoadInvasionStart();
             ChickenInvasionActive = true;
-            DownedBoss = false;
             SpawnLocation = position;
             ChatUtils.SendMessage("Chickens are invading!", DefaultColor);
             return true;
@@ -149,13 +148,9 @@ namespace ChickenInvadersMod
         /// </summary>
         public static void StopChickenInvasion()
         {
-            if (!ChickenInvasionActive)
-            {
-                return;
-            }
+            if (!ChickenInvasionActive) return;
 
             ChickenInvasionActive = false;
-            DownedBoss = false;
             Main.invasionType = 0;
 
             // inform server about new state
@@ -174,13 +169,7 @@ namespace ChickenInvadersMod
         /// </summary>
         private static void UpdateCIEvent()
         {
-            var isNear = PlayerNearInvasion(Main.LocalPlayer);
-            Main.invasionProgressNearInvasion = isNear;
-
-            if (isNear)
-            {
-                ReportInvasionProgress();
-            }
+            Main.invasionProgressNearInvasion = PlayerNearInvasion(Main.LocalPlayer);
 
             if (Main.invasionSize <= 0)
             {
@@ -191,6 +180,11 @@ namespace ChickenInvadersMod
                 }
                 UpdateWave();
             }
+
+            if (Main.invasionProgressNearInvasion)
+            {
+                ReportInvasionProgress();
+            }
         }
 
         /// <summary>
@@ -198,11 +192,9 @@ namespace ChickenInvadersMod
         /// </summary>
         private static void UpdateWave()
         {
-            Main.invasionSize = GetRequiredPoints();
-            Main.invasionSizeStart = Main.invasionSize;
-            Main.invasionProgress = 0;
             Main.invasionProgressWave++;
-            Main.invasionProgressMax = Main.invasionSizeStart;
+            Main.invasionSize = GetRequiredPoints();
+            Main.invasionProgressMax = Main.invasionSize;
 
             switch (Main.invasionProgressWave)
             {
@@ -231,12 +223,13 @@ namespace ChickenInvadersMod
         /// </summary>
         public static void ReportInvasionProgress()
         {
-            var points = GetRequiredPoints();
+            var maxPoints = GetRequiredPoints();
+            int progress = Main.invasionProgressMax - Main.invasionSize;
             if (Main.netMode != NetmodeID.MultiplayerClient)
             {
                 if (ChickenInvasionActive)
                 {
-                    Main.ReportInvasionProgress(points - Main.invasionSize, points, 0, Main.invasionProgressWave);
+                    Main.ReportInvasionProgress(progress, maxPoints, 0, Main.invasionProgressWave);
                 }
             }
             else
@@ -244,9 +237,9 @@ namespace ChickenInvadersMod
                 // syncing for multiplayer
                 foreach (Player p in Main.player)
                 {
-                    if (PlayerNearInvasion(p))
+                    if (ChickenInvasionActive && PlayerNearInvasion(p))
                     {
-                        NetMessage.SendData(MessageID.InvasionProgressReport, p.whoAmI, -1, null, points - Main.invasionSize, points, 0, Main.invasionProgressWave, 0, 0, 0);
+                        NetMessage.SendData(MessageID.InvasionProgressReport, p.whoAmI, -1, null, progress, maxPoints, 0, Main.invasionProgressWave, 0, 0, 0);
                     }
                 }
             }

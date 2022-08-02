@@ -28,7 +28,7 @@ namespace ChickenInvadersMod.NPCs
             npc.aiStyle = 2;
             npc.defense = 25;
             npc.value = 100f;
-            npc.knockBackResist = 0.5f;
+            npc.knockBackResist = 0.6f;
             npc.friendly = false;
             npc.buffImmune[BuffID.Poisoned] = true;
             npc.buffImmune[BuffID.Confused] = true;

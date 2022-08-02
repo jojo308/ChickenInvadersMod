@@ -5,7 +5,7 @@ using Terraria.ModLoader;
 namespace ChickenInvadersMod
 {
     public class CIGlobalNPC : GlobalNPC
-    {      
+    {
         public override void EditSpawnRate(Player player, ref int spawnRate, ref int maxSpawns)
         {
             if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(player))
@@ -67,8 +67,8 @@ namespace ChickenInvadersMod
                     pool.Add(ModContent.NPCType<NPCs.ChickGatlingGun>(), 1f);
                 }
                 else if (Main.invasionProgressWave == 5)
-                {                                  
-                        pool.Add(ModContent.NPCType<NPCs.SuperChicken>(), 1f);                   
+                {
+                    pool.Add(ModContent.NPCType<NPCs.SuperChicken>(), 1f);
                 }
             }
         }
