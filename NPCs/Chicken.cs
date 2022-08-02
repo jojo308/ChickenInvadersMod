@@ -7,9 +7,6 @@ namespace ChickenInvadersMod.NPCs
 {
     public class Chicken : ModNPC
     {
-        private readonly string[] HitSounds = new[] { "Sounds/NPCHit/Chicken_Hit1", "Sounds/NPCHit/Chicken_Hit2", "Sounds/NPCHit/Chicken_Hit3", "Sounds/NPCHit/Chicken_Hit4" };
-        private readonly string[] DeathSounds = new[] { "Sounds/NPCKilled/Chicken_Death1", "Sounds/NPCKilled/Chicken_Death2" };
-
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Chicken");
@@ -21,24 +18,18 @@ namespace ChickenInvadersMod.NPCs
             npc.width = 64;
             npc.height = 64;
             npc.aiStyle = 2;
-            npc.damage = 16;
+            npc.damage = 28;
             npc.defense = 10;
             npc.lifeMax = 125;
             npc.value = 50f;
-            npc.buffImmune[BuffID.Poisoned] = true;
+            npc.friendly = false;
             npc.buffImmune[BuffID.Confused] = true;
-
-            var hitIndex = Main.rand.Next(0, 3);
-            var hitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, HitSounds[hitIndex]).WithVolume(1f).WithPitchVariance(.3f);
-            npc.HitSound = hitSound;
-
-            var deathIndex = Main.rand.Next(0, 1);
-            var deathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, DeathSounds[deathIndex]).WithVolume(1f).WithPitchVariance(.3f);
-            npc.DeathSound = deathSound;
+            npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
+            npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
         }
 
         public override float SpawnChance(NPCSpawnInfo spawnInfo)
-        {            
+        {
             return SpawnCondition.Sky.Chance * 0.2f;
         }
 
@@ -54,8 +45,7 @@ namespace ChickenInvadersMod.NPCs
             if (Main.rand.NextBool(3))
             {
                 var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.ChickenDrumstick>(), 0.7);
-                dropChooser.Add(ModContent.ItemType<Items.ChickenTwinLegs>(), 0.1);
+                dropChooser.Add(ModContent.ItemType<Items.ChickenDrumstick>(), 0.8);
                 dropChooser.Add(ModContent.ItemType<Items.ChickenRoast>(), 0.05);
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
@@ -63,8 +53,35 @@ namespace ChickenInvadersMod.NPCs
                 Item.NewItem(npc.getRect(), choice);
             }
 
-            Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+            var chance = CIWorld.ChickenInvasionActive ? 600 : 100;
+            if (Main.rand.NextBool(chance))
+            {
+                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+            }
+
+
+            if (Main.rand.NextBool(2))
+            {
+                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+            }
+
             base.NPCLoot();
+        }
+
+        public override void AI()
+        {
+            npc.ai[0]--;
+            int type = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
+            float speed = 7f;
+            int damage = npc.damage / 2;
+
+            // shoot eggs 
+            if (Main.netMode != NetmodeID.MultiplayerClient && npc.ai[0] <= 0)
+            {
+                npc.ai[0] = Main.rand.NextFloat(300, 600);
+                npc.ShootAtPlayer(npc.Center, type, speed, damage);
+            }
+            base.AI();
         }
     }
 }
