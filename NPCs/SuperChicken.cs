@@ -119,8 +119,8 @@ namespace ChickenInvadersMod.NPCs
 
             Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(10, 31));
             Item.NewItem(npc.getRect(), ModContent.ItemType<Items.ChickenDrumstick>(), Main.rand.Next(5, 16));
-            Item.NewItem(npc.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(1, 8));
-            Item.NewItem(npc.getRect(), ModContent.ItemType<Items.DoubleHamburger>(), Main.rand.Next(1, 8));
+            Item.NewItem(npc.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(2, 9));
+            Item.NewItem(npc.getRect(), ModContent.ItemType<Items.DoubleHamburger>(), Main.rand.Next(2, 9));
             Item.NewItem(npc.getRect(), ModContent.ItemType<Items.ChickenRoast>(), Main.rand.Next(1, 4));
             Item.NewItem(npc.getRect(), ModContent.ItemType<Items.QuadHamburger>(), Main.rand.Next(1, 4));
             base.NPCLoot();

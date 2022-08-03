@@ -50,8 +50,7 @@ namespace ChickenInvadersMod.NPCs
                 Item.NewItem(npc.getRect(), choice);
             }
 
-            var chance = CIWorld.ChickenInvasionActive ? 600 : 100;
-            if (Main.rand.NextBool(chance))
+            if (Main.rand.NextBool(500))
             {
                 Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
