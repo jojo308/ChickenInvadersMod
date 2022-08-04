@@ -7,7 +7,7 @@ using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
-    class ChickGatlingGun : ModNPC
+    class ChickGatlingGun : BaseChicken
     {
         int projectileType;
         int projectileDamage;
@@ -77,7 +77,7 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            npc.ai[0]--;
+            TimeLeft--;
 
             // find target
             var targetPosition = npc.GetTargetPos();
@@ -88,10 +88,10 @@ namespace ChickenInvadersMod.NPCs
             npc.rotation = rotation + ((float)Math.PI * 0.5f);
 
             // shoot target occasionally
-            if (Main.netMode != NetmodeID.MultiplayerClient && (npc.ai[0] <= 0 || shooting))
+            if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft <= 0 || shooting))
             {
-                npc.ai[0] = Main.rand.NextFloat(240, 420);
-                npc.ai[1]--;
+                TimeLeft = Main.rand.NextFloat(240, 420);
+                Interval--;
                 shooting = true;
 
                 // eggs should be shot from the gatling gun. Since this npc rotates depending on the players position, the
@@ -105,9 +105,9 @@ namespace ChickenInvadersMod.NPCs
                     shooting = false;
                 }
 
-                if (npc.ai[1] <= 0)
+                if (Interval <= 0)
                 {
-                    npc.ai[1] = 16;
+                    Interval = 16;
                     shotsLeft--;
                     npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
                 }

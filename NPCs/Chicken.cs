@@ -5,7 +5,7 @@ using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
-    public class Chicken : ModNPC
+    public class Chicken : BaseChicken
     {
         public override void SetStaticDefaults()
         {
@@ -70,15 +70,15 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            npc.ai[0]--;
+            TimeLeft--;
             int type = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
             float speed = 7f;
             int damage = npc.damage / 2;
 
             // shoot eggs 
-            if (Main.netMode != NetmodeID.MultiplayerClient && npc.ai[0] <= 0)
+            if (Main.netMode != NetmodeID.MultiplayerClient && TimeLeft <= 0)
             {
-                npc.ai[0] = Main.rand.NextFloat(300, 600);
+                TimeLeft = Main.rand.NextFloat(300, 600);
                 npc.ShootAtPlayer(npc.Center, type, speed, damage);
             }
             base.AI();

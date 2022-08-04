@@ -5,7 +5,7 @@ using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
-    public class PilotChicken : ModNPC
+    public class PilotChicken : BaseChicken
     {
         int projectileType;
         int projectileDamage;
@@ -75,13 +75,13 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            npc.ai[0]--;
+            TimeLeft--;
 
-            if (Main.netMode != NetmodeID.MultiplayerClient && (npc.ai[0] <= 0 || shooting))
+            if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft <= 0 || shooting))
             {
                 shooting = true;
-                npc.ai[0] = Main.rand.NextFloat(240, 480);
-                npc.ai[1]--;
+                TimeLeft = Main.rand.NextFloat(240, 480);
+                Interval--;
 
                 // stop shooting afer 2 times
                 if (shotsLeft <= 0)
@@ -90,9 +90,9 @@ namespace ChickenInvadersMod.NPCs
                     shooting = false;
                 }
 
-                if (npc.ai[1] <= 0)
+                if (Interval <= 0)
                 {
-                    npc.ai[1] = 16;
+                    Interval = 16;
                     shotsLeft--;
                     npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
                 }

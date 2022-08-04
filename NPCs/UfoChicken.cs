@@ -5,7 +5,7 @@ using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
-    class UfoChicken : ModNPC
+    public class UfoChicken : BaseChicken
     {
         int projectileType;
         int projectileDamage;
@@ -25,6 +25,7 @@ namespace ChickenInvadersMod.NPCs
             npc.lifeMax = 300;
             npc.value = 50f;
             npc.friendly = false;
+            npc.knockBackResist = 0.8f;
             npc.buffImmune[BuffID.Poisoned] = true;
             npc.buffImmune[BuffID.Confused] = true;
             npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit3").WithVolume(1f).WithPitchVariance(.3f); ;
@@ -62,7 +63,8 @@ namespace ChickenInvadersMod.NPCs
         {
             // target nearest player
             var targetPosition = npc.GetTargetPos();
-            var velocityX = Main.rand.NextFloat(0.05f, 1f);
+            //var velocityX = Main.rand.NextFloat(0.05f, 1f);
+            var velocityX = 0.2f;
 
             // move horizontally
             if (targetPosition.X < npc.Center.X && npc.velocity.X > -3) // target on left

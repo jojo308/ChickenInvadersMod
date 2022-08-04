@@ -7,7 +7,7 @@ using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
-    class EggShipChicken : ModNPC
+    class EggShipChicken : BaseChicken
     {
         int projectileType;
         int projectileDamage;
@@ -65,12 +65,12 @@ namespace ChickenInvadersMod.NPCs
 
         public override void AI()
         {
-            npc.ai[0]--;
+            TimeLeft--;
 
             // ocasionally shoot 3 neutrons spaced out 120° between each other 
-            if (Main.netMode != NetmodeID.MultiplayerClient && npc.ai[0] <= 0)
+            if (Main.netMode != NetmodeID.MultiplayerClient && TimeLeft <= 0)
             {
-                npc.ai[0] = Main.rand.NextFloat(200, 600);
+                TimeLeft = Main.rand.NextFloat(200, 600);
                 var degrees = Main.rand.Next(0, 120);
                 Vector2 velocity1 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees));
                 Vector2 velocity2 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees + 120));

@@ -71,7 +71,7 @@ namespace ChickenInvadersMod
                 { ModContent.NPCType<NPCs.ChickGatlingGun>(), 8 },
                 { ModContent.NPCType<NPCs.EggShipChicken>(), 7 },
                 { ModContent.NPCType<NPCs.Egg>(), 2 },
-                { ModContent.NPCType<NPCs.Barrier>(), 1 },
+                { ModContent.NPCType<NPCs.Barrier>(), 0 },
                 { ModContent.NPCType<NPCs.SuperChicken>(), 100 }
             };
         }
@@ -153,7 +153,7 @@ namespace ChickenInvadersMod
             ChickenInvasionActive = false;
             Main.invasionType = 0;
 
-            // inform server about new state
+            // inform server about new state   
             if (Main.netMode == NetmodeID.Server) NetMessage.SendData(MessageID.WorldData);
 
             ChatUtils.SendMessage("Chickens have been defeated, for now...", DefaultColor);
