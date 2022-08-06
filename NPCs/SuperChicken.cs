@@ -1,5 +1,6 @@
 ﻿using ChickenInvadersMod.Projectiles;
 using Microsoft.Xna.Framework;
+using System.IO;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -43,6 +44,16 @@ namespace ChickenInvadersMod.NPCs
             get => npc.ai[2];
             set => npc.ai[2] = value;
         }
+
+        public float LaserDirection
+        {
+            get => npc.ai[3];
+            set => npc.ai[3] = value;
+        }
+
+        public float LaserStartingPoint;
+        public float Degrees;
+
         #endregion
 
         public bool IsAttacking { get { return TimeLeft == -1; } }
@@ -69,12 +80,6 @@ namespace ChickenInvadersMod.NPCs
             npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
             npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
             npc.buffImmune[BuffID.Confused] = true;
-        }
-
-        public override int SpawnNPC(int tileX, int tileY)
-        {
-            // prevent the NPC from spawning inside the ground
-            return base.SpawnNPC(tileX, tileY - 50);
         }
 
         public override void FindFrame(int frameHeight)
@@ -141,6 +146,18 @@ namespace ChickenInvadersMod.NPCs
             return 0f;
         }
 
+        public override void SendExtraAI(BinaryWriter writer)
+        {
+            writer.Write(LaserStartingPoint);
+            writer.Write(Degrees);
+        }
+
+        public override void ReceiveExtraAI(BinaryReader reader)
+        {
+            LaserStartingPoint = reader.ReadSingle();
+            Degrees = reader.ReadSingle();
+        }
+
         public override void AI()
         {
             if (hitRecently > 0) hitRecently--;
@@ -169,14 +186,15 @@ namespace ChickenInvadersMod.NPCs
             }
 
             // decrease attack timer if NPC is not attacking
-            if (!IsAttacking)
+            if (!IsAttacking && Main.netMode != NetmodeID.MultiplayerClient)
             {
                 TimeLeft++;
                 AttackType = Main.rand.Next(1, 5);
+                npc.netUpdate = true;
             }
 
             // start or continue the attack
-            if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft >= 200 || IsAttacking))
+            if (TimeLeft >= 200 || IsAttacking)
             {
                 TimeLeft = -1;
 
@@ -202,11 +220,11 @@ namespace ChickenInvadersMod.NPCs
             }
 
             // Shoot laser and than wait a few seconds
-            if (Interval == 1)
+            if (Interval == 1 && Main.netMode != NetmodeID.MultiplayerClient)
             {
                 int proj = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserBeam"), npc.damage, 0f, Main.myPlayer, npc.whoAmI);
-                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
                 NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
+                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
             }
 
             if (Interval >= 240)
@@ -231,10 +249,16 @@ namespace ChickenInvadersMod.NPCs
             {
                 Interval = 0;
                 shots++;
-                var degrees = Main.rand.Next(0, 360);
-                Vector2 velocity1 = new Vector2(0, -9f).RotatedBy(MathHelper.ToRadians(degrees));
-                Projectile.NewProjectile(npc.Center, velocity1, ModContent.ProjectileType<GuanoProjectile>(), npc.damage, 0f, Main.myPlayer);
-                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+
+                if (Main.netMode != NetmodeID.MultiplayerClient)
+                {
+                    Degrees = Main.rand.Next(0, 360);
+                    npc.netUpdate = true;
+                    Vector2 velocity1 = new Vector2(0, -9f).RotatedBy(MathHelper.ToRadians(Degrees));
+                    int proj = Projectile.NewProjectile(npc.Center, velocity1, ModContent.ProjectileType<GuanoProjectile>(), npc.damage, 0f, Main.myPlayer);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
+                    Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                }
             }
         }
 
@@ -254,8 +278,12 @@ namespace ChickenInvadersMod.NPCs
             {
                 Interval = 0;
                 shots++;
-                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Drop").WithVolume(5f).WithPitchVariance(.3f), npc.Center);
-                npc.ShootDown(npc.Bottom, ModContent.ProjectileType<FallingEggProjectile>(), 3f, npc.damage, 0f);
+
+                if (Main.netMode != NetmodeID.MultiplayerClient)
+                {
+                    npc.ShootDown(npc.Bottom, ModContent.ProjectileType<FallingEggProjectile>(), 3f, npc.damage, 0f);
+                    Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Drop").WithVolume(5f).WithPitchVariance(.3f), npc.Center);
+                }
             }
         }
 
@@ -272,37 +300,52 @@ namespace ChickenInvadersMod.NPCs
             }
 
             // set value for laser
-            if (!laser.HasValue)
+            if (!laser.HasValue && Main.netMode != NetmodeID.MultiplayerClient)
             {
-                laser = new QuadrupleLaser(Main.rand.NextFloat(-90, 90));
+                LaserStartingPoint = Main.rand.NextFloat(-90, 90);
+                laser = new QuadrupleLaser(LaserStartingPoint);
+                npc.netUpdate = true;
             }
 
             if (laser.HasValue)
             {
                 // show warning
-                if (Interval == 1)
+                if (Interval == 1 && Main.netMode != NetmodeID.MultiplayerClient)
                 {
                     int proj = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation1);
                     int proj2 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation2);
                     int proj3 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation3);
                     int proj4 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserWarning"), 0, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation4);
-                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj, proj2, proj3, proj4);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj4);
                 }
 
                 // Shoot laser and than wait a few seconds
                 if (Interval == 60)
                 {
-                    int clockwise = Main.rand.Next(0, 2);
-                    int proj = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation1);
-                    int proj2 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation2);
-                    int proj3 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation3);
-                    int proj4 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation4);
+                    LaserDirection = Main.rand.Next(0, 2);
+                    npc.netUpdate = true;
+
+                    if (Main.netMode != NetmodeID.MultiplayerClient)
+                    {
+                        int proj = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation1);
+                        int proj2 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation2);
+                        int proj3 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation3);
+                        int proj4 = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("QuadrupleLaser"), npc.damage, 0f, Main.myPlayer, npc.whoAmI, laser.Value.Rotation4);
+
+                        Main.projectile[proj].localAI[0] = LaserDirection;
+                        Main.projectile[proj2].localAI[0] = LaserDirection;
+                        Main.projectile[proj3].localAI[0] = LaserDirection;
+                        Main.projectile[proj4].localAI[0] = LaserDirection;
+                        NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
+                        NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
+                        NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
+                        NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj4);
+                    }
+
                     Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
-                    Main.projectile[proj].localAI[0] = clockwise;
-                    Main.projectile[proj2].localAI[0] = clockwise;
-                    Main.projectile[proj3].localAI[0] = clockwise;
-                    Main.projectile[proj4].localAI[0] = clockwise;
-                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj, proj2, proj3, proj4);
                 }
             }
         }

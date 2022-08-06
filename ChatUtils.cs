@@ -22,7 +22,7 @@ namespace ChickenInvadersMod
         /// <param name="message">The message to be send</param>
         /// <param name="color">The color of the message</param>
         public static void SendMessage(string message, Color color)
-        {            
+        {
             if (Main.netMode == NetmodeID.Server)
             {
                 NetMessage.BroadcastChatMessage(NetworkText.FromLiteral(message), color);

@@ -34,14 +34,19 @@ namespace ChickenInvadersMod.NPCs
             // if the NPC dies, it has a chance to spawn a new enemy
             if (Main.rand.NextBool(3))
             {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.NPCType<Chick>(), 0.2);
-                dropChooser.Add(ModContent.NPCType<Chicken>(), 0.2);
-                dropChooser.Add(ModContent.NPCType<PilotChicken>(), 0.2);
-                dropChooser.Add(ModContent.NPCType<UfoChicken>(), 0.2);
-                dropChooser.Add(ModContent.NPCType<Chickenaut>(), 0.1);
-                int choice = dropChooser;
-                NPC.NewNPC((int)npc.position.X, (int)npc.position.Y, choice);
+                // choose random chicken
+                var chooser = new WeightedRandom<int>();
+                chooser.Add(ModContent.NPCType<Chick>(), 0.2);
+                chooser.Add(ModContent.NPCType<Chicken>(), 0.2);
+                chooser.Add(ModContent.NPCType<PilotChicken>(), 0.2);
+                chooser.Add(ModContent.NPCType<UfoChicken>(), 0.2);
+                chooser.Add(ModContent.NPCType<Chickenaut>(), 0.1);
+                int choice = chooser;
+
+                // spawn chicken and sync for multiplayer              
+                var npcIndex = NPC.NewNPC((int)npc.position.X, (int)npc.position.Y, choice);
+                Main.npc[npcIndex].whoAmI = npcIndex;
+                NetMessage.SendData(MessageID.SyncNPC, -1, -1, null, npcIndex, 0f, 0f, 0f, 0, 0, 0);
             }
 
             base.NPCLoot();

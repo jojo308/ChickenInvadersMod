@@ -112,6 +112,8 @@ namespace ChickenInvadersMod.Projectiles
             if (!npc.active) projectile.Kill();
 
             FindFrame();
+
+            // The laser calls these 3 methods in order to function properly. It is up to the subclasses to implement them
             UpdateVelocity(npc);
             SetLaserPosition(npc);
             CastLights(npc);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.ID;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -31,12 +32,13 @@ namespace ChickenInvadersMod.NPCs
         public static void ShootAtPlayer(this NPC npc, Vector2 position, int projectileId, float speed, int damage, float kb = 0f)
         {
             // target player
-            var targetPosition = GetTargetPos(npc);
+            Vector2 targetPosition = GetTargetPos(npc);
             Vector2 direction = targetPosition - position;
             direction.Normalize();
 
             // shoot
-            Projectile.NewProjectile(position, direction * speed, projectileId, damage, kb, Main.myPlayer);
+            int proj = Projectile.NewProjectile(position, direction * speed, projectileId, damage, kb, Main.myPlayer);
+            NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
         }
 
         /// <summary>
@@ -56,7 +58,8 @@ namespace ChickenInvadersMod.NPCs
             dir.Normalize();
 
             // shoot
-            Projectile.NewProjectile(position, dir * speed, projectileId, damage, kb, Main.myPlayer);
+            int proj = Projectile.NewProjectile(position, dir * speed, projectileId, damage, kb, Main.myPlayer);
+            NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
         }
 
         /// <summary>

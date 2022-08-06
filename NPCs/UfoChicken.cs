@@ -63,27 +63,35 @@ namespace ChickenInvadersMod.NPCs
         {
             // target nearest player
             var targetPosition = npc.GetTargetPos();
-            //var velocityX = Main.rand.NextFloat(0.05f, 1f);
             var velocityX = 0.2f;
 
-            // move horizontally
-            if (targetPosition.X < npc.Center.X && npc.velocity.X > -3) // target on left
+            if (Interval >= 400)
             {
-                npc.velocity.X -= velocityX; // accelerate to the left
+                Interval = 0;
 
-                if ((npc.position.X - targetPosition.X) < 200 && Main.rand.NextBool(500))
+                if (Main.netMode != NetmodeID.MultiplayerClient)
                 {
                     npc.ShootDown(projectileType, projectileSpeed, projectileDamage);
                 }
             }
-            else if (targetPosition.X > npc.Center.X && npc.velocity.X < 3) // target on right
+
+            // move horizontally
+            if (targetPosition.X < npc.Center.X && npc.velocity.X > -3) // target is on the left
+            {
+                npc.velocity.X -= velocityX; // accelerate to the left
+
+                // target is below npc
+                if ((npc.position.X - targetPosition.X) < 200) Interval++;
+
+
+            }
+            else if (targetPosition.X > npc.Center.X && npc.velocity.X < 3) // target is on the right
             {
                 npc.velocity.X += velocityX; // accelerate to the right
 
-                if ((targetPosition.X - npc.position.X) < 200 && Main.rand.NextBool(500))
-                {
-                    npc.ShootDown(projectileType, projectileSpeed, projectileDamage);
-                }
+                // target is below npc
+                if ((targetPosition.X - npc.position.X) < 200) Interval++;
+
             }
 
             // move vertically
@@ -104,7 +112,6 @@ namespace ChickenInvadersMod.NPCs
 
             // move
             npc.position += npc.velocity;
-
         }
     }
 }

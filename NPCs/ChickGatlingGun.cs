@@ -88,11 +88,12 @@ namespace ChickenInvadersMod.NPCs
             npc.rotation = rotation + ((float)Math.PI * 0.5f);
 
             // shoot target occasionally
-            if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft <= 0 || shooting))
+            if (TimeLeft <= 0 || shooting)
             {
                 TimeLeft = Main.rand.NextFloat(240, 420);
                 Interval--;
                 shooting = true;
+                npc.netUpdate = true;
 
                 // eggs should be shot from the gatling gun. Since this npc rotates depending on the players position, the
                 // start position of the egg projectile should be rotated too
@@ -109,7 +110,11 @@ namespace ChickenInvadersMod.NPCs
                 {
                     Interval = 16;
                     shotsLeft--;
-                    npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
+
+                    if (Main.netMode != NetmodeID.MultiplayerClient)
+                    {
+                        npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
+                    }
                 }
             }
 

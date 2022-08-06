@@ -77,11 +77,12 @@ namespace ChickenInvadersMod.NPCs
         {
             TimeLeft--;
 
-            if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft <= 0 || shooting))
+            if (TimeLeft <= 0 || shooting)
             {
                 shooting = true;
                 TimeLeft = Main.rand.NextFloat(240, 480);
                 Interval--;
+                npc.netUpdate = true;
 
                 // stop shooting afer 2 times
                 if (shotsLeft <= 0)
@@ -94,10 +95,13 @@ namespace ChickenInvadersMod.NPCs
                 {
                     Interval = 16;
                     shotsLeft--;
-                    npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+
+                    if (Main.netMode != NetmodeID.MultiplayerClient)
+                    {
+                        npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+                    }
                 }
             }
-            base.AI();
         }
     }
 }

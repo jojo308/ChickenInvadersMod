@@ -1,5 +1,4 @@
 ﻿using Microsoft.Xna.Framework;
-using System;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -12,6 +11,12 @@ namespace ChickenInvadersMod.NPCs
         int projectileType;
         int projectileDamage;
         float projectileSpeed;
+
+        public float Degrees
+        {
+            get => npc.ai[3];
+            set => npc.ai[3] = value;
+        }
 
         public override void SetStaticDefaults()
         {
@@ -35,7 +40,7 @@ namespace ChickenInvadersMod.NPCs
             npc.HitSound = SoundID.NPCHit4;
             npc.DeathSound = SoundID.NPCDeath14;
             projectileType = ModContent.ProjectileType<Projectiles.NeutronProjectile>();
-            projectileSpeed = 7f;
+            projectileSpeed = 10f;
             projectileDamage = npc.damage / 2;
         }
 
@@ -68,42 +73,35 @@ namespace ChickenInvadersMod.NPCs
             TimeLeft--;
 
             // ocasionally shoot 3 neutrons spaced out 120° between each other 
-            if (Main.netMode != NetmodeID.MultiplayerClient && TimeLeft <= 0)
+            if (TimeLeft <= 0)
             {
                 TimeLeft = Main.rand.NextFloat(200, 600);
-                var degrees = Main.rand.Next(0, 120);
-                Vector2 velocity1 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees));
-                Vector2 velocity2 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees + 120));
-                Vector2 velocity3 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(degrees + 240));
+                Degrees = Main.rand.Next(0, 120);
+                npc.netUpdate = true;
 
-                Projectile.NewProjectile(npc.Center, velocity1, projectileType, projectileDamage, 0f, Main.myPlayer);
-                Projectile.NewProjectile(npc.Center, velocity2, projectileType, projectileDamage, 0f, Main.myPlayer);
-                Projectile.NewProjectile(npc.Center, velocity3, projectileType, projectileDamage, 0f, Main.myPlayer);
+                if (Main.netMode != NetmodeID.MultiplayerClient)
+                {
+                    Vector2 velocity1 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(Degrees));
+                    Vector2 velocity2 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(Degrees + 120));
+                    Vector2 velocity3 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(Degrees + 240));
 
-                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                    var proj = Projectile.NewProjectile(npc.Center, velocity1, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj2 = Projectile.NewProjectile(npc.Center, velocity2, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj3 = Projectile.NewProjectile(npc.Center, velocity3, projectileType, projectileDamage, 0f, Main.myPlayer);
+
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
+                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
+
+                    Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                }
             }
-
-            npc.velocity *= 0.98f;
 
             // make dust for engine
             var dust = DustID.MagnetSphere;
             Dust.NewDust(new Vector2(npc.Bottom.X - 8, npc.Bottom.Y), 16, 16, dust, npc.velocity.X, npc.velocity.Y);
             Dust.NewDust(new Vector2(npc.BottomLeft.X - 10, npc.BottomLeft.Y - 8), 16, 16, dust, npc.velocity.X, npc.velocity.Y);
             Dust.NewDust(new Vector2(npc.BottomRight.X - 10, npc.BottomRight.Y - 9), 16, 16, dust, npc.velocity.X, npc.velocity.Y);
-
-            // check for collision                      
-            npc.CheckCollision();
-
-            // move
-            npc.position += npc.velocity;
-        }
-
-        public static Vector2 Rotate(Vector2 v, float delta)
-        {
-            return new Vector2(
-                (float)(v.X * Math.Cos(delta) - v.Y * Math.Sin(delta)),
-                (float)(v.X * Math.Sin(delta) + v.Y * Math.Cos(delta))
-            );
         }
     }
 }

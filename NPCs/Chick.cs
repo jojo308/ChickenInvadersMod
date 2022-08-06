@@ -48,7 +48,7 @@ namespace ChickenInvadersMod.NPCs
             {
                 Item.NewItem(npc.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(1, 5));
             }
-          
+
             if (Main.rand.NextBool(500))
             {
                 Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
@@ -70,8 +70,8 @@ namespace ChickenInvadersMod.NPCs
             {
                 TimeLeft = Main.rand.NextFloat(400, 600);
                 npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+                npc.netUpdate = true;
             }
-            base.AI();
         }
     }
 }

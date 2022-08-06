@@ -19,6 +19,9 @@ namespace ChickenInvadersMod.Projectiles
             set => projectile.ai[1] = value;
         }
 
+        /// <summary>
+        /// Whether or not the projectile is rotating clockwise
+        /// </summary>
         public bool Clockwise => projectile.localAI[0] == 1;
 
         public override Vector2 GetEndPoint(NPC npc) => npc.Center + projectile.velocity * Distance;
@@ -85,13 +88,13 @@ namespace ChickenInvadersMod.Projectiles
         public override void UpdateVelocity(NPC npc)
         {
             var position = npc.Center;
-            var radians = Clockwise ? Rotation += MathHelper.ToRadians(1) : Rotation -= MathHelper.ToRadians(1);
+            var degrees = Main.expertMode ? 1f : 0.8f;
+            var radians = Clockwise ? Rotation += MathHelper.ToRadians(degrees) : Rotation -= MathHelper.ToRadians(degrees);
             Vector2 target = (position * Distance).RotatedBy(radians, position);
             Vector2 diff = target - position;
             diff.Normalize();
             projectile.velocity = diff;
             projectile.position += projectile.velocity;
-            projectile.netUpdate = true;
         }
 
         public override void SetLaserPosition(NPC npc)

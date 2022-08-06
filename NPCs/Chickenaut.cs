@@ -1,5 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Terraria;
+﻿using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
@@ -13,7 +12,7 @@ namespace ChickenInvadersMod.NPCs
         float projectileSpeed;
 
         int shotsLeft = 3;
-        bool shooting = false;
+        bool Shooting => TimeLeft <= 0;
 
         public override void SetStaticDefaults()
         {
@@ -71,7 +70,6 @@ namespace ChickenInvadersMod.NPCs
                 Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
-
             if (Main.rand.NextBool(2))
             {
                 Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
@@ -84,31 +82,32 @@ namespace ChickenInvadersMod.NPCs
         {
             TimeLeft--;
 
-            if (Main.netMode != NetmodeID.MultiplayerClient && (TimeLeft <= 0 || shooting))
+            if (TimeLeft <= 0 || Shooting)
             {
-                shooting = true;
-                TimeLeft = Main.rand.NextFloat(150, 400);
-                Interval--;
-
-                if (shotsLeft <= 0)
+                // stop attacking after 3 shots have been fired
+                if (shotsLeft <= 0 && Main.netMode != NetmodeID.MultiplayerClient)
                 {
                     shotsLeft = 3;
-                    shooting = false;
+                    Interval = 16f;
+                    TimeLeft = Main.rand.Next(150, 400);
+                    npc.netUpdate = true;
+                    return;
                 }
 
+                Interval--;
+
+                // attack
                 if (Interval <= 0)
                 {
-                    Interval = 16;
+                    Interval = 16f;
                     shotsLeft--;
-                    ShootNeutron(npc.Bottom);
+                    if (Main.netMode != NetmodeID.MultiplayerClient)
+                    {
+                        Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(5f).WithPitchVariance(.3f), npc.Bottom);
+                        npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+                    }
                 }
             }
-        }
-
-        public void ShootNeutron(Vector2 position)
-        {
-            Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(5f).WithPitchVariance(.3f), position);
-            npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
         }
     }
 }
