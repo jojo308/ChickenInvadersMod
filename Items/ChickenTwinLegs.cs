@@ -24,7 +24,7 @@ namespace ChickenInvadersMod.Items
             item.autoReuse = false;
             item.maxStack = 99;
             item.UseSound = SoundID.Item2;
-            item.buffType = BuffID.WellFed;            
+            item.buffType = BuffID.WellFed;
             item.buffTime = 18000;
             item.consumable = true;
         }

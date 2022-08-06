@@ -23,12 +23,12 @@ namespace ChickenInvadersMod.Items.Weapons
             item.useStyle = ItemUseStyleID.SwingThrow;
             item.knockBack = 4;
             item.value = 10;
-            item.rare = ItemRarityID.White;           
+            item.rare = ItemRarityID.White;
             item.autoReuse = false;
             item.shoot = mod.ProjectileType("EggProjectile");
             item.shootSpeed = 8f;
             item.useTurn = true;
-            item.maxStack = 999;            
+            item.maxStack = 999;
             item.consumable = true;
             item.noUseGraphic = true;
         }
@@ -37,6 +37,6 @@ namespace ChickenInvadersMod.Items.Weapons
         {
             Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Drop").WithVolume(.5f).WithPitchVariance(.3f));
             base.OnConsumeItem(player);
-        }              
+        }
     }
 }

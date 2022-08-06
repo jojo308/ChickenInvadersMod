@@ -22,7 +22,7 @@ namespace ChickenInvadersMod.Items
             item.useStyle = ItemUseStyleID.EatingUsing;
             item.value = Item.sellPrice(copper: 50);
             item.rare = ItemRarityID.White;
-            item.autoReuse = false;         
+            item.autoReuse = false;
             item.maxStack = 99;
             item.UseSound = SoundID.Item2;
             item.buffType = BuffID.WellFed;
