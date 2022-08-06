@@ -19,7 +19,7 @@ namespace ChickenInvadersMod.Items
             item.height = 42;
             item.useTime = 17;
             item.useAnimation = 17;
-            item.useStyle = ItemUseStyleID.EatingUsing;          
+            item.useStyle = ItemUseStyleID.EatingUsing;
             item.value = Item.sellPrice(gold: 2, silver: 50);
             item.rare = ItemRarityID.Green;
             item.autoReuse = false;

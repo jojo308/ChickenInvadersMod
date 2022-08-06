@@ -78,7 +78,7 @@ namespace ChickenInvadersMod.NPCs
             // shoot eggs 
             if (Main.netMode != NetmodeID.MultiplayerClient && TimeLeft <= 0)
             {
-                TimeLeft = Main.rand.NextFloat(300, 600);                
+                TimeLeft = Main.rand.NextFloat(300, 600);
                 npc.ShootAtPlayer(npc.Center, type, speed, damage);
                 npc.netUpdate = true;
             }
