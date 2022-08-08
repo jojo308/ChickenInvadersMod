@@ -28,8 +28,8 @@ namespace ChickenInvadersMod.NPCs
             npc.knockBackResist = 0.8f;
             npc.buffImmune[BuffID.Poisoned] = true;
             npc.buffImmune[BuffID.Confused] = true;
-            npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit3").WithVolume(1f).WithPitchVariance(.3f); ;
-            npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
+            //npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit3").WithVolume(1f).WithPitchVariance(.3f); ;
+            //npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
 
             projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
             projectileSpeed = 7f;

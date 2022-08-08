@@ -97,8 +97,8 @@ namespace ChickenInvadersMod.NPCs
             npc.lifeMax = 400;
             npc.value = 100f;
             npc.friendly = false;
-            npc.HitSound = SoundID.NPCHit4;
-            npc.DeathSound = SoundID.NPCDeath14;
+            //npc.HitSound = SoundID.NPCHit4;
+            //npc.DeathSound = SoundID.NPCDeath14;
         }
 
         public override void FindFrame(int frameHeight)
