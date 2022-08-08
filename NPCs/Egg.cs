@@ -24,9 +24,11 @@ namespace ChickenInvadersMod.NPCs
             npc.noGravity = true;
             npc.friendly = false;
             npc.buffImmune[BuffID.Confused] = true;
-            //npc.HitSound = SoundID.NPCHit1;
-            //npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/EggHit").WithVolume(1.5f).WithPitchVariance(.3f);
-            //npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/EggDeath").WithVolume(1.5f).WithPitchVariance(.3f);
+            if (!Main.dedServ)
+            {
+                npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/EggHit").WithVolume(1.5f).WithPitchVariance(.3f);
+                npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/EggDeath").WithVolume(1.5f).WithPitchVariance(.3f);
+            }
         }
 
         public override void NPCLoot()

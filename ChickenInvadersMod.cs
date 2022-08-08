@@ -24,8 +24,7 @@ namespace ChickenInvadersMod
         public override void Close()
         {
             var slots = new int[] {
-                GetSoundSlot(SoundType.Music, "Sounds/Music/CIEvent"),
-                GetSoundSlot(SoundType.Music, "Sounds/Music/CIBossFight")
+                GetSoundSlot(SoundType.Music, "Sounds/Music/CIEvent")
             };
 
             // stop music. Mod might crash if music is not properly closed
