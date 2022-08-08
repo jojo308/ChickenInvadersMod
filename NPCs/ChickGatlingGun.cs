@@ -38,7 +38,6 @@ namespace ChickenInvadersMod.NPCs
             npc.buffImmune[BuffID.Confused] = true;
             npc.HitSound = SoundID.NPCHit4;
             npc.DeathSound = SoundID.NPCDeath14;
-
             projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
             projectileSpeed = 7f;
             projectileDamage = npc.damage / 2;
