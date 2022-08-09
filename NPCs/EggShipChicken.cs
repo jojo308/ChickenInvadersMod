@@ -93,7 +93,10 @@ namespace ChickenInvadersMod.NPCs
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
 
-                    Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                    if (!Main.dedServ)
+                    {
+                        Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                    }
                 }
             }
 
