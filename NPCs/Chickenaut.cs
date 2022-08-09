@@ -105,7 +105,10 @@ namespace ChickenInvadersMod.NPCs
                     shotsLeft--;
                     if (Main.netMode != NetmodeID.MultiplayerClient)
                     {
-                        Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(5f).WithPitchVariance(.3f), npc.Bottom);
+                        if (!Main.dedServ)
+                        {
+                            Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(5f).WithPitchVariance(.3f), npc.Bottom);
+                        }
                         npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
                     }
                 }
