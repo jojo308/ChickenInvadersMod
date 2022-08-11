@@ -204,7 +204,7 @@ namespace ChickenInvadersMod.NPCs
             {
                 var current = Main.npc[(int)Target];
 
-                // check if the target is stil lalive
+                // check if the target is still alive
                 if (current.life <= 0)
                 {
                     Target = -1;

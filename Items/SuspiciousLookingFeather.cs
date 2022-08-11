@@ -30,12 +30,23 @@ namespace ChickenInvadersMod.Items
 
         public override bool UseItem(Player player)
         {
-            return true;
-        }
+            if (CIWorld.HasAnyInvasion()) return false;
 
-        public override bool ConsumeItem(Player player)
-        {
-            return CIWorld.StartChickenInvasion(player.position);
+            if (Main.netMode == NetmodeID.SinglePlayer)
+            {
+                CIWorld.StartChickenInvasion(player.Center);
+                return true;
+            }
+
+            if (Main.netMode == NetmodeID.MultiplayerClient && player.whoAmI == Main.myPlayer)
+            {
+                ModPacket packet = mod.GetPacket();
+                packet.Write((byte)CIMessageType.StartChickenInvasion);
+                packet.Write((byte)player.whoAmI);
+                packet.Send();
+                return true;
+            }
+            return false;
         }
     }
 }
