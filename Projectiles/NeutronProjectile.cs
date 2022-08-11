@@ -28,7 +28,10 @@ namespace ChickenInvadersMod.Projectiles
         public override void Kill(int timeLeft)
         {
             Collision.HitTiles(projectile.position, projectile.velocity, projectile.width, projectile.height);
-            Main.PlaySound(SoundID.NPCHit3.WithVolume(2f).WithPitchVariance(.3f), projectile.position);
+            if (!Main.dedServ)
+            {
+                Main.PlaySound(SoundID.NPCHit3.WithVolume(2f).WithPitchVariance(.3f), projectile.position);
+            }
         }
 
         public override void AI()

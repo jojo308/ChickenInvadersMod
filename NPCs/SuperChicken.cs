@@ -60,7 +60,7 @@ namespace ChickenInvadersMod.NPCs
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Super Chicken");
-            Main.npcFrameCount[npc.type] = Main.npcFrameCount[2];
+            Main.npcFrameCount[npc.type] = 4;
         }
 
         public override void SetDefaults()
@@ -76,18 +76,52 @@ namespace ChickenInvadersMod.NPCs
             npc.knockBackResist = 0f;
             npc.friendly = false;
             npc.boss = true;
-            npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
-            npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
+            if (!Main.dedServ)
+            {
+                npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
+                npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
+            }
             npc.buffImmune[BuffID.Confused] = true;
         }
 
+        private const int FrameNormal = 0;
+        private const int FrameNormal2 = 1;
+        private const int FrameHit = 2;
+        private const int FrameHit2 = 3;
+
         public override void FindFrame(int frameHeight)
         {
-            Main.npcTexture[npc.type] = (hitRecently > 0) ? mod.GetTexture("NPCs/SuperChicken_Hit") : mod.GetTexture("NPCs/SuperChicken");
-
+            if (hitRecently > 0)
+            {
+                if (hitRecently < 10)
+                {
+                    npc.frame.Y = FrameHit * frameHeight;
+                }
+                else if (hitRecently < 20)
+                {
+                    npc.frame.Y = FrameHit2 * frameHeight;
+                }
+                else
+                {
+                    npc.frameCounter = 0;
+                }
+            }
+            else
+            {
+                if (npc.frameCounter < 10)
+                {
+                    npc.frame.Y = FrameNormal2 * frameHeight;
+                }
+                else if (npc.frameCounter < 20)
+                {
+                    npc.frame.Y = FrameNormal * frameHeight;
+                }
+                else
+                {
+                    npc.frameCounter = 0;
+                }
+            }
             npc.frameCounter++;
-            if (npc.frameCounter >= 20) npc.frameCounter = 0;
-            npc.frame.Y = (int)npc.frameCounter / 10 * frameHeight;
         }
 
         public override void OnHitByItem(Player player, Item item, int damage, float knockback, bool crit)
@@ -243,7 +277,6 @@ namespace ChickenInvadersMod.NPCs
             // move faster horizontally when using the laser beam
             if (npc.velocity.X <= 6f)
             {
-                npc.netUpdate = true;
                 npc.velocity.X += 0.01f;
                 npc.position.X += npc.velocity.X;
             }
@@ -254,7 +287,10 @@ namespace ChickenInvadersMod.NPCs
                 npc.netUpdate = true;
                 int proj = Projectile.NewProjectile(npc.Center, Vector2.Zero, mod.ProjectileType("LaserBeam"), npc.damage, 0f, Main.myPlayer, npc.whoAmI);
                 NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
-                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                if (!Main.dedServ)
+                {
+                    Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                }
             }
         }
 
@@ -263,15 +299,15 @@ namespace ChickenInvadersMod.NPCs
         /// </summary>
         private void HandleGuanoSpray()
         {
-            if (TimeLeft % -16 == 0)
+            if (TimeLeft % -16 == 0 && Main.netMode != NetmodeID.MultiplayerClient)
             {
-                if (Main.netMode != NetmodeID.MultiplayerClient)
+                Degrees = Main.rand.Next(0, 360);
+                npc.netUpdate = true;
+                Vector2 velocity1 = new Vector2(0, -9f).RotatedBy(MathHelper.ToRadians(Degrees));
+                int proj = Projectile.NewProjectile(npc.Center, velocity1, ModContent.ProjectileType<GuanoProjectile>(), npc.damage, 0f, Main.myPlayer);
+                NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
+                if (!Main.dedServ)
                 {
-                    Degrees = Main.rand.Next(0, 360);
-                    npc.netUpdate = true;
-                    Vector2 velocity1 = new Vector2(0, -9f).RotatedBy(MathHelper.ToRadians(Degrees));
-                    int proj = Projectile.NewProjectile(npc.Center, velocity1, ModContent.ProjectileType<GuanoProjectile>(), npc.damage, 0f, Main.myPlayer);
-                    NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
                     Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
                 }
             }
@@ -282,13 +318,12 @@ namespace ChickenInvadersMod.NPCs
         /// </summary>
         private void HandleBulkEggs()
         {
-            if (TimeLeft % -16 == 0)
+            if (TimeLeft % -16 == 0 && Main.netMode != NetmodeID.MultiplayerClient)
             {
                 npc.netUpdate = true;
-
-                if (Main.netMode != NetmodeID.MultiplayerClient)
+                npc.ShootDown(npc.Bottom, ModContent.ProjectileType<FallingEggProjectile>(), 3f, npc.damage, 0f);
+                if (!Main.dedServ)
                 {
-                    npc.ShootDown(npc.Bottom, ModContent.ProjectileType<FallingEggProjectile>(), 3f, npc.damage, 0f);
                     Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Drop").WithVolume(5f).WithPitchVariance(.3f), npc.Center);
                 }
             }
@@ -346,7 +381,10 @@ namespace ChickenInvadersMod.NPCs
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj4);
 
-                    Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                    if (!Main.dedServ)
+                    {
+                        Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), npc.position);
+                    }
                     return;
                 }
             }
@@ -363,7 +401,6 @@ namespace ChickenInvadersMod.NPCs
             LaserDirection = 0;
             LaserStartingPoint = 0;
             Degrees = 0;
-            hitRecently = 0;
             laser = default;
         }
     }

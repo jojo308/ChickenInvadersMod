@@ -13,8 +13,14 @@ namespace ChickenInvadersMod.NPCs
         int projectileDamage;
         float projectileSpeed;
 
-        int shotsLeft = 3;
-        bool shooting = false;
+        public bool Shooting => TimeLeft < 0;
+
+        // since we dont use the Interval AI slot, we can override it here
+        public float Target
+        {
+            get => npc.ai[1];
+            set => npc.ai[1] = value;
+        }
 
         public override void SetStaticDefaults()
         {
@@ -38,7 +44,6 @@ namespace ChickenInvadersMod.NPCs
             npc.buffImmune[BuffID.Confused] = true;
             npc.HitSound = SoundID.NPCHit4;
             npc.DeathSound = SoundID.NPCDeath14;
-
             projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
             projectileSpeed = 7f;
             projectileDamage = npc.damage / 2;
@@ -75,47 +80,67 @@ namespace ChickenInvadersMod.NPCs
             base.NPCLoot();
         }
 
+        /// <summary>
+        /// Tries to find a target to shoot at. Will target the nearest player who is alive
+        /// </summary>
+        /// <returns>The target, or null if there is no target</returns>
+        public Player FindTarget()
+        {
+            // if there already is a target
+            if (Target >= 0)
+            {
+                var current = Main.player[(int)Target];
+
+                // check if the target is stil lalive
+                if (current.dead || !current.active)
+                {
+                    Target = -1;
+                    npc.netUpdate = true;
+                    return null;
+                }
+
+                return current;
+            }
+
+            // find new target
+            npc.TargetClosest(true);
+            Player target = npc.HasValidTarget ? Main.player[npc.target] : null;
+
+            Target = target == null ? -1f : target.whoAmI;
+            npc.netUpdate = true;
+            return target;
+        }
+
         public override void AI()
         {
             TimeLeft--;
 
-            // find target
-            var targetPosition = npc.GetTargetPos();
+            if (TimeLeft < -48 && Main.netMode != NetmodeID.MultiplayerClient)
+            {
+                TimeLeft = Main.rand.Next(240, 420);
+                Target = -1; // find new target after shooting
+                npc.netUpdate = true;
+            }
+
+            // find target            
+            var target = FindTarget();
+            var targetPosition = target.Center;
+
+            // no need to execute rest of the code if NPC has no target
+            if (target == null) return;
 
             // aim gun at target
             Vector2 direction = npc.Bottom - targetPosition;
             float rotation = (float)Math.Atan2(direction.Y, direction.X);
             npc.rotation = rotation + ((float)Math.PI * 0.5f);
 
-            // shoot target occasionally
-            if (TimeLeft <= 0 || shooting)
+            // shoot target occasionally           
+            if (Shooting && TimeLeft % -16 == 0 && Main.netMode != NetmodeID.MultiplayerClient)
             {
-                TimeLeft = Main.rand.NextFloat(240, 420);
-                Interval--;
-                shooting = true;
-                npc.netUpdate = true;
-
                 // eggs should be shot from the gatling gun. Since this npc rotates depending on the players position, the
                 // start position of the egg projectile should be rotated too
                 var position = Vector2.Transform(npc.Bottom - npc.Center, Matrix.CreateRotationZ(npc.rotation)) + npc.Center;
-
-                // stop shooting afer 3 times
-                if (shotsLeft <= 0)
-                {
-                    shotsLeft = 3;
-                    shooting = false;
-                }
-
-                if (Interval <= 0)
-                {
-                    Interval = 16;
-                    shotsLeft--;
-
-                    if (Main.netMode != NetmodeID.MultiplayerClient)
-                    {
-                        npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
-                    }
-                }
+                npc.ShootAtPlayer(position, projectileType, projectileSpeed, projectileDamage);
             }
 
             // move away from player if the player is getting close
@@ -124,11 +149,11 @@ namespace ChickenInvadersMod.NPCs
                 // move horizontally
                 if (targetPosition.X < npc.Center.X && npc.velocity.X > -3) // target on left
                 {
-                    npc.velocity.X += 0.22f; // go right        
+                    npc.velocity.X += 0.22f; // go right
                 }
                 else if (targetPosition.X > npc.Center.X && npc.velocity.X < 3) // target on right
                 {
-                    npc.velocity.X -= 0.22f;  // go left            
+                    npc.velocity.X -= 0.22f;  // go left
                 }
 
                 // move vertically
@@ -144,27 +169,24 @@ namespace ChickenInvadersMod.NPCs
             else
             {
                 // if npc is too far away from the player, slowly get back
-                if ((targetPosition.Y - Main.screenHeight / 2) > npc.position.Y)
+                if ((targetPosition.Y - 600) > npc.position.Y)
                 {
                     npc.velocity.Y += 0.11f;
                 }
 
-                if ((targetPosition.X - Main.screenWidth / 2.5) < npc.position.X)
+                if ((targetPosition.X - 800) < npc.position.X)
                 {
                     npc.velocity.X -= 0.22f;
                 }
 
-                if ((targetPosition.X + Main.screenWidth / 2.5) > npc.position.X)
+                if ((targetPosition.X + 800) > npc.position.X)
                 {
                     npc.velocity.X += 0.22f;
                 }
             }
+
             npc.velocity *= 0.95f;
-
-            // check for collision
             npc.CheckCollision();
-
-            // move
             npc.position += npc.velocity;
         }
     }

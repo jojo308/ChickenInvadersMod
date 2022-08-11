@@ -81,7 +81,6 @@ namespace ChickenInvadersMod.Projectiles
             diff.Normalize();
             projectile.velocity = diff;
             projectile.position += projectile.velocity;
-            projectile.netUpdate = true;
         }
 
         public override void SetLaserPosition(NPC npc)
