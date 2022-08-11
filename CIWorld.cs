@@ -11,8 +11,6 @@ namespace ChickenInvadersMod
     public class CIWorld : ModWorld
     {
         private static readonly int MaxWaves = 5;
-        private static Color DefaultColor = Color.MediumPurple;
-
         public static bool ChickenInvasionActive = false;
         public static bool DownedSuperChicken = false;
         public static Vector2 SpawnLocation;
@@ -83,7 +81,8 @@ namespace ChickenInvadersMod
                 { "CIActive", ChickenInvasionActive},
                 { "DownedSuperChicken", DownedSuperChicken },
                 { "SpawnX", SpawnLocation.X },
-                { "SpawnY", SpawnLocation.Y }
+                { "SpawnY", SpawnLocation.Y },
+                { "Wave", Main.invasionProgressWave }
             };
         }
 
@@ -94,6 +93,7 @@ namespace ChickenInvadersMod
             var x = tag.GetFloat("SpawnX");
             var y = tag.GetFloat("SpawnY");
             SpawnLocation = new Vector2(x, y);
+            Main.invasionProgressWave = tag.GetInt("Wave");
         }
 
         public override void NetSend(BinaryWriter writer)
@@ -103,6 +103,7 @@ namespace ChickenInvadersMod
             flags[1] = DownedSuperChicken;
             writer.Write(flags);
             writer.WriteVector2(SpawnLocation);
+            writer.Write(Main.invasionProgressWave);
         }
 
         public override void NetReceive(BinaryReader reader)
@@ -111,6 +112,16 @@ namespace ChickenInvadersMod
             ChickenInvasionActive = flags[0];
             DownedSuperChicken = flags[1];
             SpawnLocation = reader.ReadVector2();
+            Main.invasionProgressWave = reader.ReadInt32();
+        }
+
+        /// <summary>
+        /// Returns whether or not there is any invasion in progress
+        /// </summary>
+        /// <returns>True if there is an invasion in progress, false otherwise</returns>
+        public static bool HasAnyInvasion()
+        {
+            return ChickenInvasionActive || Main.invasionType != 0;
         }
 
         /// <summary>
@@ -120,26 +131,30 @@ namespace ChickenInvadersMod
         /// <returns>true if the invasion was started, false otherwise</returns>
         public static bool StartChickenInvasion(Vector2 position)
         {
-            if (ChickenInvasionActive && Main.invasionType == -1 || Main.invasionType != 0)
-            {
-                ChatUtils.SendMessage($"An invasion is already in progress ({Main.invasionType})", Color.White);
-                return false;
-            }
+            // do not start invasion if there already is an invasion active
+            if (HasAnyInvasion()) return false;
 
-            // todo scaling for multiplayer            
+            // todo scaling for multiplayer
+            ChickenInvasionActive = true;
+            SpawnLocation = position;
             Main.invasionType = -1;
             Main.invasionProgressWave = 1;
             Main.invasionSize = GetRequiredPoints();
             Main.invasionSizeStart = Main.invasionSize;
             Main.invasionProgress = 0;
             Main.invasionProgressIcon = 0;
-            Main.invasionProgressMax = Main.invasionSizeStart;
+            Main.invasionProgressMax = Main.invasionSize;
             Main.invasionProgressNearInvasion = true;
             Main.invasionX = SpawnLocation.X;
             Main.FakeLoadInvasionStart();
-            ChickenInvasionActive = true;
-            SpawnLocation = position;
-            ChatUtils.SendMessage("Chickens are invading!", DefaultColor);
+
+            if (Main.netMode != NetmodeID.MultiplayerClient)
+            {
+                NetMessage.SendData(MessageID.WorldData);
+            }
+
+            ChatUtils.SendMessage("Chickens are invading!", ChatUtils.EventColor);
+            DisplayWaveMessage(1);
             return true;
         }
 
@@ -154,9 +169,9 @@ namespace ChickenInvadersMod
             Main.invasionType = 0;
 
             // inform server about new state   
-            if (Main.netMode == NetmodeID.Server) NetMessage.SendData(MessageID.WorldData);
+            if (Main.netMode != NetmodeID.MultiplayerClient) NetMessage.SendData(MessageID.WorldData);
 
-            ChatUtils.SendMessage("Chickens have been defeated, for now...", DefaultColor);
+            ChatUtils.SendMessage("Chickens have been defeated, for now...", ChatUtils.EventColor);
         }
 
         public override void PreUpdate()
@@ -169,19 +184,22 @@ namespace ChickenInvadersMod
         /// </summary>
         private static void UpdateCIEvent()
         {
-            Main.invasionProgressNearInvasion = PlayerNearInvasion(Main.LocalPlayer);
-
+            // if wave is completed
             if (Main.invasionSize <= 0)
             {
+                // stop invasion if last wave is completed
                 if (Main.invasionProgressWave == MaxWaves)
                 {
                     StopChickenInvasion();
                     return;
                 }
+
+                // proceed to next wave
                 UpdateWave();
             }
 
-            if (Main.invasionProgressNearInvasion)
+            // report invasion progress every second so the invasion UI doesn't disappear
+            if (Main.GameUpdateCount % 60 == 0)
             {
                 ReportInvasionProgress();
             }
@@ -193,16 +211,26 @@ namespace ChickenInvadersMod
         private static void UpdateWave()
         {
             Main.invasionProgressWave++;
+            Main.invasionProgress = 0;
             Main.invasionSize = GetRequiredPoints();
+            Main.invasionSizeStart = Main.invasionSize;
             Main.invasionProgressMax = Main.invasionSize;
+            DisplayWaveMessage(Main.invasionProgressWave);
+        }
 
-            switch (Main.invasionProgressWave)
+        /// <summary>
+        /// Displays the message for the specified wave
+        /// </summary>
+        /// <param name="wave">The current wave</param>
+        private static void DisplayWaveMessage(int wave)
+        {
+            switch (wave)
             {
-                case 1: ChatUtils.SendMessage("Wave 1: Chicks, Chickens and Pilot Chickens", DefaultColor); break;
-                case 2: ChatUtils.SendMessage("Wave 2: Chicks, Chickens, Pilot Chickens and Egg Ship Chickens", DefaultColor); break;
-                case 3: ChatUtils.SendMessage("Wave 3: Pilot Chickens, Eggs, UFO chickens, Chickenaut and Egg Ship Chickens", DefaultColor); break;
-                case 4: ChatUtils.SendMessage("Wave 4: Pilot Chickens, Eggs, UFO Chickens, Chickenauts, Egg Ship Chicken and ChickGatlingGun", DefaultColor); break;
-                default: ChatUtils.SendMessage("Wave 5: Boss battle", DefaultColor); break;
+                case 1: ChatUtils.SendMessage("Wave 1: Chicks, Chickens and Pilot Chickens", ChatUtils.EventColor); break;
+                case 2: ChatUtils.SendMessage("Wave 2: Chicks, Chickens, Pilot Chickens and Egg Ship Chickens", ChatUtils.EventColor); break;
+                case 3: ChatUtils.SendMessage("Wave 3: Pilot Chickens, Eggs, UFO chickens, Chickenaut and Egg Ship Chickens", ChatUtils.EventColor); break;
+                case 4: ChatUtils.SendMessage("Wave 4: Pilot Chickens, Eggs, UFO Chickens, Chickenauts, Egg Ship Chicken and ChickGatlingGun", ChatUtils.EventColor); break;
+                default: ChatUtils.SendMessage("Wave 5: Boss battle", ChatUtils.EventColor); break;
             }
         }
 
@@ -224,22 +252,25 @@ namespace ChickenInvadersMod
         public static void ReportInvasionProgress()
         {
             var maxPoints = GetRequiredPoints();
-            int progress = Main.invasionProgressMax - Main.invasionSize;
-            if (Main.netMode != NetmodeID.MultiplayerClient)
+            int progress = maxPoints - Main.invasionSize;
+
+            if (Main.netMode == NetmodeID.SinglePlayer)
             {
-                if (ChickenInvasionActive)
+                Main.invasionProgressNearInvasion = PlayerNearInvasion(Main.LocalPlayer);
+
+                if (Main.invasionProgressNearInvasion)
                 {
                     Main.ReportInvasionProgress(progress, maxPoints, 0, Main.invasionProgressWave);
                 }
             }
-            else
+            else if (Main.netMode == NetmodeID.Server)
             {
-                // syncing for multiplayer
                 foreach (Player p in Main.player)
                 {
-                    if (ChickenInvasionActive && PlayerNearInvasion(p))
+                    if (p.active && PlayerNearInvasion(p))
                     {
-                        NetMessage.SendData(MessageID.InvasionProgressReport, p.whoAmI, -1, null, progress, maxPoints, 0, Main.invasionProgressWave, 0, 0, 0);
+                        Main.invasionProgressNearInvasion = true;
+                        NetMessage.SendData(MessageID.InvasionProgressReport, p.whoAmI, -1, null, progress, maxPoints, 0, Main.invasionProgressWave);
                     }
                 }
             }

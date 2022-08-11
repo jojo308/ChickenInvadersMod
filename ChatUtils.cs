@@ -7,13 +7,16 @@ namespace ChickenInvadersMod
 {
     class ChatUtils
     {
+        public static Color DefaultColor = Color.White;
+        public static Color EventColor = new Color(175, 75, 255);
+
         /// <summary>
         /// Sends a message in chat
         /// </summary>
         /// <param name="message">The message to be send</param>
         public static void SendMessage(string message)
         {
-            SendMessage(message, Color.White);
+            SendMessage(message, DefaultColor);
         }
 
         /// <summary>

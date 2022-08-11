@@ -1,4 +1,5 @@
 using Microsoft.Xna.Framework.Audio;
+using System.IO;
 using Terraria;
 using Terraria.ModLoader;
 
@@ -37,5 +38,24 @@ namespace ChickenInvadersMod
             }
             base.Close();
         }
+
+        public override void HandlePacket(BinaryReader reader, int whoAmI)
+        {
+            var messageType = (CIMessageType)reader.ReadByte();
+            switch (messageType)
+            {
+                case CIMessageType.StartChickenInvasion:
+                    var playerIndex = reader.ReadByte();
+                    var pos = Main.player[playerIndex].Center;
+                    CIWorld.StartChickenInvasion(pos);
+                    break;
+            }
+        }
+
+    }
+
+    public enum CIMessageType : byte
+    {
+        StartChickenInvasion
     }
 }
