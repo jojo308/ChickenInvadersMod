@@ -40,6 +40,8 @@ namespace ChickenInvadersMod.NPCs
             projectileType = ModContent.ProjectileType<Projectiles.NeutronProjectile>();
             projectileDamage = npc.damage / 2;
             projectileSpeed = 7f;
+            banner = npc.type;
+            bannerItem = mod.ItemType("ChickenautBanner");
         }
 
         public override float SpawnChance(NPCSpawnInfo spawnInfo)

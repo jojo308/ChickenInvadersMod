@@ -35,6 +35,8 @@ namespace ChickenInvadersMod.NPCs
             projectileType = ModContent.ProjectileType<Projectiles.GuanoProjectile>();
             projectileDamage = npc.damage / 2;
             projectileSpeed = 5f;
+            banner = npc.type;
+            bannerItem = mod.ItemType("ChickBanner");
         }
 
         public override void FindFrame(int frameHeight)
