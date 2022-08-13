@@ -16,7 +16,7 @@ namespace ChickenInvadersMod.Projectiles
         /// <summary>
         /// The NPC that owns this projectile
         /// </summary>      
-        public NPC Owner => Main.npc[(int)projectile.ai[0]];
+        public NPC Owner => Main.npc[(int)Projectile.ai[0]];
 
         /// <summary>
         /// The amount of ticks before updating to the next frame. A higher number means a slower animation
@@ -71,13 +71,13 @@ namespace ChickenInvadersMod.Projectiles
 
         public override void SetDefaults()
         {
-            projectile.penetrate = -1;
-            projectile.tileCollide = false;
-            projectile.hide = true;
-            projectile.magic = true;
+            Projectile.penetrate = -1;
+            Projectile.tileCollide = false;
+            Projectile.hide = true;
+            Projectile.DamageType = DamageClass.Magic;
         }
 
-        public override void DrawBehind(int index, List<int> drawCacheProjsBehindNPCsAndTiles, List<int> drawCacheProjsBehindNPCs, List<int> drawCacheProjsBehindProjectiles, List<int> drawCacheProjsOverWiresUI)
+        public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
         {
             drawCacheProjsBehindNPCs.Add(index);
             base.DrawBehind(index, drawCacheProjsBehindNPCsAndTiles, drawCacheProjsBehindNPCs, drawCacheProjsBehindProjectiles, drawCacheProjsOverWiresUI);
@@ -90,16 +90,16 @@ namespace ChickenInvadersMod.Projectiles
         /// </summary>
         public void FindFrame()
         {
-            if (Main.projFrames[projectile.type] <= 1) return;
+            if (Main.projFrames[Projectile.type] <= 1) return;
 
-            projectile.frameCounter++;
-            if (projectile.frameCounter >= frameSpeed)
+            Projectile.frameCounter++;
+            if (Projectile.frameCounter >= frameSpeed)
             {
-                projectile.frameCounter = 0;
-                projectile.frame++;
-                if (projectile.frame >= Main.projFrames[projectile.type])
+                Projectile.frameCounter = 0;
+                Projectile.frame++;
+                if (Projectile.frame >= Main.projFrames[Projectile.type])
                 {
-                    projectile.frame = 0;
+                    Projectile.frame = 0;
                 }
             }
         }
@@ -109,7 +109,7 @@ namespace ChickenInvadersMod.Projectiles
             NPC npc = Owner;
 
             // Kill the projectile of the npc is no longer active (alive)
-            if (!npc.active) projectile.Kill();
+            if (!npc.active) Projectile.Kill();
 
             FindFrame();
 

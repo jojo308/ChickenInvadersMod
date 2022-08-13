@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Chat;
 using Terraria.ID;
 using Terraria.Localization;
 
@@ -28,7 +29,7 @@ namespace ChickenInvadersMod
         {
             if (Main.netMode == NetmodeID.Server)
             {
-                NetMessage.BroadcastChatMessage(NetworkText.FromLiteral(message), color);
+                ChatHelper.BroadcastChatMessage(NetworkText.FromLiteral(message), color);
             }
             else if (Main.netMode == NetmodeID.SinglePlayer)
             {

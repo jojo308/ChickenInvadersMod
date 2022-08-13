@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ModLoader;
 namespace ChickenInvadersMod.Projectiles
 {
@@ -8,44 +9,44 @@ namespace ChickenInvadersMod.Projectiles
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Guano Projectile");
-            Main.projFrames[projectile.type] = 8;
+            Main.projFrames[Projectile.type] = 8;
         }
 
         public override void SetDefaults()
         {
-            projectile.width = 14;
-            projectile.height = 23;
-            projectile.ranged = true;
-            projectile.timeLeft = 300;
-            projectile.penetrate = 1;
-            projectile.ignoreWater = true;
-            projectile.hostile = true;
-            projectile.tileCollide = true;
+            Projectile.width = 14;
+            Projectile.height = 23;
+            Projectile.DamageType = DamageClass.Ranged;
+            Projectile.timeLeft = 300;
+            Projectile.penetrate = 1;
+            Projectile.ignoreWater = true;
+            Projectile.hostile = true;
+            Projectile.tileCollide = true;
         }
 
         public override void Kill(int timeLeft)
         {
-            Collision.HitTiles(projectile.position, projectile.velocity, projectile.width, projectile.height);
+            Collision.HitTiles(Projectile.position, Projectile.velocity, Projectile.width, Projectile.height);
             if (!Main.dedServ)
             {
-                Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Splash").WithVolume(2f).WithPitchVariance(.3f), projectile.position);
+                SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Splash").WithVolume(2f).WithPitchVariance(.3f), Projectile.position);
             }
         }
 
         public override void AI()
         {
             // rotate the projectile to the direction it was shot to
-            projectile.rotation = projectile.velocity.ToRotation() - MathHelper.PiOver2;
+            Projectile.rotation = Projectile.velocity.ToRotation() - MathHelper.PiOver2;
 
             int frameSpeed = 4; //How fast you want it to animate
-            projectile.frameCounter++;
-            if (projectile.frameCounter >= frameSpeed)
+            Projectile.frameCounter++;
+            if (Projectile.frameCounter >= frameSpeed)
             {
-                projectile.frameCounter = 0;
-                projectile.frame++;
-                if (projectile.frame >= Main.projFrames[projectile.type])
+                Projectile.frameCounter = 0;
+                Projectile.frame++;
+                if (Projectile.frame >= Main.projFrames[Projectile.type])
                 {
-                    projectile.frame = 0;
+                    Projectile.frame = 0;
                 }
             }
         }

@@ -14,26 +14,26 @@ namespace ChickenInvadersMod.NPCs
 
         public override void SetDefaults()
         {
-            npc.width = 64;
-            npc.height = 83;
-            npc.aiStyle = 23;
-            npc.damage = 20;
-            npc.defense = 10;
-            npc.lifeMax = 300;
-            npc.value = 200f;
-            npc.noGravity = true;
-            npc.friendly = false;
-            npc.buffImmune[BuffID.Confused] = true;
+            NPC.width = 64;
+            NPC.height = 83;
+            NPC.aiStyle = 23;
+            NPC.damage = 20;
+            NPC.defense = 10;
+            NPC.lifeMax = 300;
+            NPC.value = 200f;
+            NPC.noGravity = true;
+            NPC.friendly = false;
+            NPC.buffImmune[BuffID.Confused] = true;
             if (!Main.dedServ)
             {
-                npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/EggHit").WithVolume(1.5f).WithPitchVariance(.3f);
-                npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/EggDeath").WithVolume(1.5f).WithPitchVariance(.3f);
+                NPC.HitSound = Mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/EggHit").WithVolume(1.5f).WithPitchVariance(.3f);
+                NPC.DeathSound = Mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/EggDeath").WithVolume(1.5f).WithPitchVariance(.3f);
             }
-            banner = npc.type;
-            bannerItem = mod.ItemType("EggBanner");
+            Banner = NPC.type;
+            BannerItem = Mod.Find<ModItem>("EggBanner").Type;
         }
 
-        public override void NPCLoot()
+        public override void OnKill()
         {
             // if the NPC dies, it has a chance to spawn a new enemy
             if (Main.rand.NextBool(3))
@@ -48,12 +48,12 @@ namespace ChickenInvadersMod.NPCs
                 int choice = chooser;
 
                 // spawn chicken and sync for multiplayer              
-                var npcIndex = NPC.NewNPC((int)npc.position.X, (int)npc.position.Y, choice);
+                var npcIndex = NPC.NewNPC((int)NPC.position.X, (int)NPC.position.Y, choice);
                 Main.npc[npcIndex].whoAmI = npcIndex;
                 NetMessage.SendData(MessageID.SyncNPC, -1, -1, null, npcIndex, 0f, 0f, 0f, 0, 0, 0);
             }
 
-            base.NPCLoot();
+            base.OnKill();
         }
     }
 }

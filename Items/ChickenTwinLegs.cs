@@ -13,20 +13,20 @@ namespace ChickenInvadersMod.Items
 
         public override void SetDefaults()
         {
-            item.noMelee = true;
-            item.width = 37;
-            item.height = 31;
-            item.useTime = 32;
-            item.useAnimation = 17;
-            item.useStyle = ItemUseStyleID.EatingUsing;
-            item.value = Item.sellPrice(silver: 1);
-            item.rare = ItemRarityID.White;
-            item.autoReuse = false;
-            item.maxStack = 99;
-            item.UseSound = SoundID.Item2;
-            item.buffType = BuffID.WellFed;
-            item.buffTime = 18000;
-            item.consumable = true;
+            Item.noMelee = true;
+            Item.width = 37;
+            Item.height = 31;
+            Item.useTime = 32;
+            Item.useAnimation = 17;
+            Item.useStyle = ItemUseStyleID.EatFood;
+            Item.value = Item.sellPrice(silver: 1);
+            Item.rare = ItemRarityID.White;
+            Item.autoReuse = false;
+            Item.maxStack = 99;
+            Item.UseSound = SoundID.Item2;
+            Item.buffType = BuffID.WellFed;
+            Item.buffTime = 18000;
+            Item.consumable = true;
         }
     }
 }

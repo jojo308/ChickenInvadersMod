@@ -7,7 +7,7 @@ namespace ChickenInvadersMod
 {
     public class ChickenInvadersMod : Mod
     {
-        public override void UpdateMusic(ref int music, ref MusicPriority priority)
+        public override void UpdateMusic(ref int music, ref SceneEffectPriority priority)/* tModPorter Note: Removed. Use ModSceneEffect.Music and .Priority, aswell as ModSceneEffect.IsSceneEffectActive */
         {
             if (Main.gameMenu || Main.myPlayer == -1 || !Main.LocalPlayer.active)
             {
@@ -18,7 +18,7 @@ namespace ChickenInvadersMod
             if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(Main.LocalPlayer))
             {
                 music = GetSoundSlot(SoundType.Music, "Sounds/Music/CIEvent");
-                priority = MusicPriority.Event;
+                priority = SceneEffectPriority.Event;
             }
         }
 

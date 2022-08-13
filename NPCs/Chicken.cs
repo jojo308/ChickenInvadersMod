@@ -1,6 +1,7 @@
 ﻿using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.Utilities;
 using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
@@ -10,27 +11,27 @@ namespace ChickenInvadersMod.NPCs
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Chicken");
-            Main.npcFrameCount[npc.type] = Main.npcFrameCount[2];
+            Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
         }
 
         public override void SetDefaults()
         {
-            npc.width = 64;
-            npc.height = 64;
-            npc.aiStyle = 2;
-            npc.damage = 28;
-            npc.defense = 10;
-            npc.lifeMax = 125;
-            npc.value = 50f;
-            npc.friendly = false;
-            npc.buffImmune[BuffID.Confused] = true;
+            NPC.width = 64;
+            NPC.height = 64;
+            NPC.aiStyle = 2;
+            NPC.damage = 28;
+            NPC.defense = 10;
+            NPC.lifeMax = 125;
+            NPC.value = 50f;
+            NPC.friendly = false;
+            NPC.buffImmune[BuffID.Confused] = true;
             if (!Main.dedServ)
             {
-                npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
-                npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
+                NPC.HitSound = Mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
+                NPC.DeathSound = Mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
             }
-            banner = npc.type;
-            bannerItem = mod.ItemType("ChickenBanner");
+            Banner = NPC.type;
+            BannerItem = Mod.Find<ModItem>("ChickenBanner").Type;
         }
 
         public override float SpawnChance(NPCSpawnInfo spawnInfo)
@@ -40,12 +41,12 @@ namespace ChickenInvadersMod.NPCs
 
         public override void FindFrame(int frameHeight)
         {
-            npc.frameCounter++;
-            if (npc.frameCounter >= 20) npc.frameCounter = 0;
-            npc.frame.Y = (int)npc.frameCounter / 10 * frameHeight;
+            NPC.frameCounter++;
+            if (NPC.frameCounter >= 20) NPC.frameCounter = 0;
+            NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        public override void NPCLoot()
+        public override void OnKill()
         {
             if (Main.rand.NextBool(3))
             {
@@ -55,22 +56,22 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
                 int choice = dropChooser;
-                Item.NewItem(npc.getRect(), choice);
+                Item.NewItem(NPC.getRect(), choice);
             }
 
             var chance = CIWorld.ChickenInvasionActive ? 500 : 100;
             if (Main.rand.NextBool(chance))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
-            base.NPCLoot();
+            base.OnKill();
         }
 
         public override void AI()
@@ -78,14 +79,14 @@ namespace ChickenInvadersMod.NPCs
             TimeLeft--;
             int type = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
             float speed = 7f;
-            int damage = npc.damage / 2;
+            int damage = NPC.damage / 2;
 
             // shoot eggs 
             if (Main.netMode != NetmodeID.MultiplayerClient && TimeLeft <= 0)
             {
                 TimeLeft = Main.rand.NextFloat(300, 600);
-                npc.ShootAtPlayer(npc.Center, type, speed, damage);
-                npc.netUpdate = true;
+                NPC.ShootAtPlayer(NPC.Center, type, speed, damage);
+                NPC.netUpdate = true;
             }
         }
     }

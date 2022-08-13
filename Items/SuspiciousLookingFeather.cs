@@ -14,21 +14,21 @@ namespace ChickenInvadersMod.Items
 
         public override void SetDefaults()
         {
-            item.noMelee = true;
-            item.width = 12;
-            item.height = 15;
-            item.useTime = 32;
-            item.useAnimation = 17;
-            item.useStyle = ItemUseStyleID.HoldingUp;
-            item.value = Item.sellPrice(gold: 2);
-            item.rare = ItemRarityID.Blue;
-            item.autoReuse = false;
-            item.maxStack = 1;
-            item.UseSound = SoundID.Item1;
-            item.consumable = true;
+            Item.noMelee = true;
+            Item.width = 12;
+            Item.height = 15;
+            Item.useTime = 32;
+            Item.useAnimation = 17;
+            Item.useStyle = ItemUseStyleID.HoldUp;
+            Item.value = Item.sellPrice(gold: 2);
+            Item.rare = ItemRarityID.Blue;
+            Item.autoReuse = false;
+            Item.maxStack = 1;
+            Item.UseSound = SoundID.Item1;
+            Item.consumable = true;
         }
 
-        public override bool UseItem(Player player)
+        public override bool? UseItem(Player player)/* tModPorter Suggestion: Return null instead of false */
         {
             if (CIWorld.HasAnyInvasion()) return false;
 
@@ -40,7 +40,7 @@ namespace ChickenInvadersMod.Items
 
             if (Main.netMode == NetmodeID.MultiplayerClient && player.whoAmI == Main.myPlayer)
             {
-                ModPacket packet = mod.GetPacket();
+                ModPacket packet = Mod.GetPacket();
                 packet.Write((byte)CIMessageType.StartChickenInvasion);
                 packet.Write((byte)player.whoAmI);
                 packet.Send();

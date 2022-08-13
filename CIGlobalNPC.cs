@@ -11,7 +11,7 @@ namespace ChickenInvadersMod
             if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(player))
             {
                 // do not spawn any NPCs if the boss has spawned
-                if (NPC.AnyNPCs(mod.NPCType("SuperChicken")))
+                if (NPC.AnyNPCs(Mod.Find<ModNPC>("SuperChicken").Type))
                 {
                     spawnRate = 0;
                     maxSpawns = 0;
@@ -26,7 +26,7 @@ namespace ChickenInvadersMod
 
         public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
         {
-            if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(spawnInfo.player))
+            if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(spawnInfo.Player))
             {
                 pool.Clear();
 
@@ -73,7 +73,7 @@ namespace ChickenInvadersMod
             }
         }
 
-        public override void NPCLoot(NPC npc)
+        public override void OnKill(NPC npc)
         {
             // only report kills if Chicken Invasion is active
             if (CIWorld.ChickenInvasionActive)

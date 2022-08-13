@@ -8,7 +8,7 @@ using Terraria.ModLoader.IO;
 
 namespace ChickenInvadersMod
 {
-    public class CIWorld : ModWorld
+    public class CIWorld : ModSystem
     {
         private static readonly int MaxWaves = 5;
         public static bool ChickenInvasionActive = false;
@@ -53,9 +53,9 @@ namespace ChickenInvadersMod
         // the enemies that belong to the Chicken Invasion
         public static Dictionary<int, int> Enemies;
 
-        public override void Initialize()
+        public override void OnWorldLoad()
         {
-            base.Initialize();
+            base.OnWorldLoad();
             ChickenInvasionActive = false;
             DownedSuperChicken = false;
 
@@ -74,7 +74,7 @@ namespace ChickenInvadersMod
             };
         }
 
-        public override TagCompound Save()
+        public override void SaveWorldData(TagCompound tag)/* tModPorter Suggestion: Edit tag parameter instead of returning new TagCompound */
         {
             return new TagCompound
             {
@@ -86,7 +86,7 @@ namespace ChickenInvadersMod
             };
         }
 
-        public override void Load(TagCompound tag)
+        public override void LoadWorldData(TagCompound tag)
         {
             ChickenInvasionActive = tag.GetBool("CIActive");
             DownedSuperChicken = tag.GetBool("DownedSuperChicken");
@@ -174,7 +174,7 @@ namespace ChickenInvadersMod
             ChatUtils.SendMessage("Chickens have been defeated, for now...", ChatUtils.EventColor);
         }
 
-        public override void PreUpdate()
+        public override void PreUpdateWorld()
         {
             if (ChickenInvasionActive) UpdateCIEvent();
         }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -13,7 +14,7 @@ namespace ChickenInvadersMod.NPCs
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Barrier");
-            Main.npcFrameCount[npc.type] = Main.npcFrameCount[3];
+            Main.npcFrameCount[NPC.type] = Main.npcFrameCount[3];
         }
 
         /// <summary>
@@ -21,8 +22,8 @@ namespace ChickenInvadersMod.NPCs
         /// </summary>
         public float Target
         {
-            get => npc.ai[0];
-            set => npc.ai[0] = value;
+            get => NPC.ai[0];
+            set => NPC.ai[0] = value;
         }
 
         /// <summary>
@@ -30,8 +31,8 @@ namespace ChickenInvadersMod.NPCs
         /// </summary>
         private float NoTarget
         {
-            get => npc.ai[1];
-            set => npc.ai[1] = value;
+            get => NPC.ai[1];
+            set => NPC.ai[1] = value;
         }
 
         /// <summary>
@@ -40,7 +41,7 @@ namespace ChickenInvadersMod.NPCs
         /// <param name="target">The NPC to be targeted</param>
         /// <returns>True if the NPC is a valid target, false otherwise</returns>
         private bool IsValidTarget(NPC target) =>
-            target.type != npc.type
+            target.type != NPC.type
             && target.active
             && target.life > 0
             && target.type != ModContent.NPCType<SuperChicken>()
@@ -53,7 +54,7 @@ namespace ChickenInvadersMod.NPCs
         /// <returns>True if the NPC can be shielded, false otherwise</returns>
         private bool IsShielded(NPC other)
         {
-            if (other.modNPC is BaseChicken npc)
+            if (other.ModNPC is BaseChicken npc)
             {
                 return !npc.IsProtected;
             }
@@ -67,7 +68,7 @@ namespace ChickenInvadersMod.NPCs
         /// <param name="target">The target to be shielded</param>
         private void ShieldTarget(NPC target)
         {
-            if (target.modNPC is BaseChicken npc && !npc.IsProtected)
+            if (target.ModNPC is BaseChicken npc && !npc.IsProtected)
             {
                 npc.IsProtected = true;
             }
@@ -79,7 +80,7 @@ namespace ChickenInvadersMod.NPCs
         /// <param name="target">The target to be unshielded</param>
         private void UnshieldTarget(NPC target)
         {
-            if (target.modNPC is BaseChicken npc && npc.IsProtected)
+            if (target.ModNPC is BaseChicken npc && npc.IsProtected)
             {
                 npc.IsProtected = false;
             }
@@ -87,49 +88,49 @@ namespace ChickenInvadersMod.NPCs
 
         public override void SetDefaults()
         {
-            npc.width = 64;
-            npc.height = 26;
-            npc.damage = 10;
-            npc.defense = 25;
-            npc.aiStyle = 0;
-            npc.noGravity = true;
-            npc.knockBackResist = 0f;
-            npc.lifeMax = 400;
-            npc.value = 100f;
-            npc.friendly = false;
-            npc.HitSound = SoundID.NPCHit4;
-            npc.DeathSound = SoundID.NPCDeath14;
-            banner = npc.type;
-            bannerItem = mod.ItemType("BarrierBanner");
+            NPC.width = 64;
+            NPC.height = 26;
+            NPC.damage = 10;
+            NPC.defense = 25;
+            NPC.aiStyle = 0;
+            NPC.noGravity = true;
+            NPC.knockBackResist = 0f;
+            NPC.lifeMax = 400;
+            NPC.value = 100f;
+            NPC.friendly = false;
+            NPC.HitSound = SoundID.NPCHit4;
+            NPC.DeathSound = SoundID.NPCDeath14;
+            Banner = NPC.type;
+            BannerItem = Mod.Find<ModItem>("BarrierBanner").Type;
         }
 
         public override void FindFrame(int frameHeight)
         {
-            if (npc.life > npc.lifeMax * 0.66)
+            if (NPC.life > NPC.lifeMax * 0.66)
             {
-                npc.frameCounter = 0;
+                NPC.frameCounter = 0;
             }
-            else if (npc.life <= npc.lifeMax * 0.66 && npc.life >= npc.lifeMax * 0.33)
+            else if (NPC.life <= NPC.lifeMax * 0.66 && NPC.life >= NPC.lifeMax * 0.33)
             {
-                npc.frameCounter = 1;
+                NPC.frameCounter = 1;
             }
-            else if (npc.life < npc.lifeMax * 0.33)
+            else if (NPC.life < NPC.lifeMax * 0.33)
             {
-                npc.frameCounter = 2;
+                NPC.frameCounter = 2;
             }
-            npc.frame.Y = (int)npc.frameCounter * frameHeight;
+            NPC.frame.Y = (int)NPC.frameCounter * frameHeight;
         }
 
         public override void HitEffect(int hitDirection, double damage)
         {
-            if (npc.life <= 0)
+            if (NPC.life <= 0)
             {
                 for (int i = 0; i < 10; i++)
                 {
-                    Dust.NewDust(npc.Center, 32, 32, DustID.Smoke, npc.velocity.X, npc.velocity.Y);
+                    Dust.NewDust(NPC.Center, 32, 32, DustID.Smoke, NPC.velocity.X, NPC.velocity.Y);
                 }
 
-                Main.PlaySound(SoundID.NPCDeath14, npc.position);
+                SoundEngine.PlaySound(SoundID.NPCDeath14, NPC.position);
             }
             base.HitEffect(hitDirection, damage);
         }
@@ -139,9 +140,9 @@ namespace ChickenInvadersMod.NPCs
             // if the Barrier cannot find an NPC to shield in time, it will explode. Otherwise there will be too much barriers on screen instead of chickens
             if (NoTarget >= 300)
             {
-                npc.life = 0;
-                npc.active = false;
-                npc.HitEffect();
+                NPC.life = 0;
+                NPC.active = false;
+                NPC.HitEffect();
                 return;
             }
 
@@ -151,7 +152,7 @@ namespace ChickenInvadersMod.NPCs
             // move under target
             if (current != null)
             {
-                if (npc.life <= 0)
+                if (NPC.life <= 0)
                 {
                     UnshieldTarget(current);
                 }
@@ -161,35 +162,35 @@ namespace ChickenInvadersMod.NPCs
                 }
 
                 var targetPosition = current.Bottom;
-                targetPosition.Y += npc.height;
+                targetPosition.Y += NPC.height;
 
                 var velocity = .22f;
 
-                if (targetPosition.X < npc.Center.X && npc.velocity.X > -3)
+                if (targetPosition.X < NPC.Center.X && NPC.velocity.X > -3)
                 {
-                    npc.velocity.X -= velocity;
+                    NPC.velocity.X -= velocity;
                 }
-                else if (targetPosition.X > npc.Center.X && npc.velocity.X < 3)
+                else if (targetPosition.X > NPC.Center.X && NPC.velocity.X < 3)
                 {
-                    npc.velocity.X += velocity;
-                }
-
-                if (targetPosition.Y < npc.position.Y && npc.velocity.Y > -3)
-                {
-                    npc.velocity.Y -= velocity;
-                }
-                else if (targetPosition.Y > npc.position.Y && npc.velocity.Y < 3)
-                {
-                    npc.velocity.Y += velocity;
-                    npc.velocity.Y *= 0.9f;
+                    NPC.velocity.X += velocity;
                 }
 
-                npc.position += npc.velocity;
+                if (targetPosition.Y < NPC.position.Y && NPC.velocity.Y > -3)
+                {
+                    NPC.velocity.Y -= velocity;
+                }
+                else if (targetPosition.Y > NPC.position.Y && NPC.velocity.Y < 3)
+                {
+                    NPC.velocity.Y += velocity;
+                    NPC.velocity.Y *= 0.9f;
+                }
+
+                NPC.position += NPC.velocity;
             }
             else
             {
                 // if there is no target
-                npc.velocity.Y = 0f;
+                NPC.velocity.Y = 0f;
                 Target = -1f;
                 NoTarget++;
             }
@@ -226,7 +227,7 @@ namespace ChickenInvadersMod.NPCs
                 // Check if NPC can be shielded
                 if (IsValidTarget(other) && IsShielded(other))
                 {
-                    var dist = Vector2.Distance(npc.Center, other.Center);
+                    var dist = Vector2.Distance(NPC.Center, other.Center);
                     if (dist < closest)
                     {
                         closest = dist;
