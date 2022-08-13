@@ -36,6 +36,8 @@ namespace ChickenInvadersMod.NPCs
             projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
             projectileSpeed = 7f;
             projectileDamage = npc.damage / 2;
+            banner = npc.type;
+            bannerItem = mod.ItemType("UfoChickenBanner");
         }
 
         public override void NPCLoot()

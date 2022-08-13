@@ -29,6 +29,8 @@ namespace ChickenInvadersMod.NPCs
                 npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/EggHit").WithVolume(1.5f).WithPitchVariance(.3f);
                 npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/EggDeath").WithVolume(1.5f).WithPitchVariance(.3f);
             }
+            banner = npc.type;
+            bannerItem = mod.ItemType("EggBanner");
         }
 
         public override void NPCLoot()

@@ -42,6 +42,8 @@ namespace ChickenInvadersMod.NPCs
             projectileType = ModContent.ProjectileType<Projectiles.NeutronProjectile>();
             projectileSpeed = 10f;
             projectileDamage = npc.damage / 2;
+            banner = npc.type;
+            bannerItem = mod.ItemType("EggShipChickenBanner");
         }
 
         public override void NPCLoot()
