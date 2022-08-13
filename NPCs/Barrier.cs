@@ -99,6 +99,8 @@ namespace ChickenInvadersMod.NPCs
             npc.friendly = false;
             npc.HitSound = SoundID.NPCHit4;
             npc.DeathSound = SoundID.NPCDeath14;
+            banner = npc.type;
+            bannerItem = mod.ItemType("BarrierBanner");
         }
 
         public override void FindFrame(int frameHeight)
