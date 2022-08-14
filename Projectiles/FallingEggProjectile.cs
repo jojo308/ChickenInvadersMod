@@ -27,10 +27,7 @@ namespace ChickenInvadersMod.Projectiles
         public override void Kill(int timeLeft)
         {
             Collision.HitTiles(Projectile.position, Projectile.velocity, Projectile.width, Projectile.height);
-            if (!Main.dedServ)
-            {
-                SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Splash").WithVolume(2f).WithPitchVariance(.3f), Projectile.position);
-            }
+            SoundEngine.PlaySound(SoundUtils.EggSplash, Projectile.position);
         }
 
         public override void AI()

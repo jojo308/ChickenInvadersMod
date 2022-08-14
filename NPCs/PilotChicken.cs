@@ -32,12 +32,10 @@ namespace ChickenInvadersMod.NPCs
             NPC.friendly = false;
             NPC.buffImmune[BuffID.Poisoned] = true;
             NPC.buffImmune[BuffID.Confused] = true;
-            if (!Main.dedServ)
-            {
-                NPC.HitSound = Mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit2").WithVolume(1f).WithPitchVariance(.3f); ;
-                NPC.DeathSound = Mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death2").WithVolume(1f).WithPitchVariance(.3f);
-            }
+            NPC.HitSound = SoundUtils.ChickenHit;
+            NPC.DeathSound = SoundUtils.ChickenDeath;
             projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
+            Mod.Find<ModProjectile>("FallingEggProjectile");
             projectileDamage = NPC.damage / 2;
             projectileSpeed = 7f;
             Banner = NPC.type;
@@ -61,17 +59,17 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
                 int choice = dropChooser;
-                Item.NewItem(NPC.getRect(), choice);
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
             base.OnKill();

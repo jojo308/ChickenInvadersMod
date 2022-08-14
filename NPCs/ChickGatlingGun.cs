@@ -58,6 +58,7 @@ namespace ChickenInvadersMod.NPCs
             NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
+        // todo implement new loot system
         public override void OnKill()
         {
             if (Main.rand.NextBool(10))
@@ -66,17 +67,17 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.9);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.01);
                 int choice = dropChooser;
-                Item.NewItem(NPC.getRect(), choice);
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
             base.OnKill();
@@ -126,10 +127,11 @@ namespace ChickenInvadersMod.NPCs
 
             // find target            
             var target = FindTarget();
-            var targetPosition = target.Center;
 
             // no need to execute rest of the code if NPC has no target
             if (target == null) return;
+
+            var targetPosition = target.Center;
 
             // aim gun at target
             Vector2 direction = NPC.Bottom - targetPosition;

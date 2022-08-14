@@ -78,11 +78,8 @@ namespace ChickenInvadersMod.NPCs
             NPC.knockBackResist = 0f;
             NPC.friendly = false;
             NPC.boss = true;
-            if (!Main.dedServ)
-            {
-                NPC.HitSound = Mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
-                NPC.DeathSound = Mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
-            }
+            NPC.HitSound = SoundUtils.ChickenHit;
+            NPC.DeathSound = SoundUtils.SuperChickenDeath;
             NPC.buffImmune[BuffID.Confused] = true;
         }
 
@@ -154,15 +151,17 @@ namespace ChickenInvadersMod.NPCs
             if (!CIWorld.DownedSuperChicken)
             {
                 CIWorld.DownedSuperChicken = true;
-                if (Main.netMode == NetmodeID.Server) NetMessage.SendData(MessageID.WorldData);
+
+                // triggers a lantern night
+                NPC.SetEventFlagCleared(ref CIWorld.DownedSuperChicken, -1);
             }
 
-            Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(10, 31));
-            Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.ChickenDrumstick>(), Main.rand.Next(5, 16));
-            Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(2, 9));
-            Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.DoubleHamburger>(), Main.rand.Next(2, 9));
-            Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.ChickenRoast>(), Main.rand.Next(1, 4));
-            Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.QuadHamburger>(), Main.rand.Next(1, 4));
+            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(10, 31));
+            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.ChickenDrumstick>(), Main.rand.Next(5, 16));
+            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(2, 9));
+            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.DoubleHamburger>(), Main.rand.Next(2, 9));
+            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.ChickenRoast>(), Main.rand.Next(1, 4));
+            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.QuadHamburger>(), Main.rand.Next(1, 4));
             base.OnKill();
         }
 
@@ -287,12 +286,9 @@ namespace ChickenInvadersMod.NPCs
             if (TimeLeft == -1 && Main.netMode != NetmodeID.MultiplayerClient)
             {
                 NPC.netUpdate = true;
-                int proj = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserBeam").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI);
+                int proj = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserBeam").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI);
                 NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
-                if (!Main.dedServ)
-                {
-                    SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), NPC.position);
-                }
+                SoundEngine.PlaySound(SoundUtils.Laser, NPC.position);
             }
         }
 
@@ -306,12 +302,9 @@ namespace ChickenInvadersMod.NPCs
                 Degrees = Main.rand.Next(0, 360);
                 NPC.netUpdate = true;
                 Vector2 velocity1 = new Vector2(0, -9f).RotatedBy(MathHelper.ToRadians(Degrees));
-                int proj = Projectile.NewProjectile(NPC.Center, velocity1, ModContent.ProjectileType<GuanoProjectile>(), NPC.damage, 0f, Main.myPlayer);
+                int proj = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity1, ModContent.ProjectileType<GuanoProjectile>(), NPC.damage, 0f, Main.myPlayer);
                 NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
-                if (!Main.dedServ)
-                {
-                    SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), NPC.position);
-                }
+                SoundEngine.PlaySound(SoundUtils.Neutron, NPC.position);
             }
         }
 
@@ -324,10 +317,7 @@ namespace ChickenInvadersMod.NPCs
             {
                 NPC.netUpdate = true;
                 NPC.ShootDown(NPC.Bottom, ModContent.ProjectileType<FallingEggProjectile>(), 3f, NPC.damage, 0f);
-                if (!Main.dedServ)
-                {
-                    SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Drop").WithVolume(5f).WithPitchVariance(.3f), NPC.Center);
-                }
+                SoundEngine.PlaySound(SoundUtils.EggDrop, NPC.Center);
             }
         }
 
@@ -352,10 +342,11 @@ namespace ChickenInvadersMod.NPCs
                 if (TimeLeft == -1)
                 {
                     NPC.netUpdate = true;
-                    int proj = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation1);
-                    int proj2 = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation2);
-                    int proj3 = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation3);
-                    int proj4 = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation4);
+                    var entity = NPC.GetSource_FromAI();
+                    int proj = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation1);
+                    int proj2 = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation2);
+                    int proj3 = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation3);
+                    int proj4 = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("LaserWarning").Type, 0, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation4);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
@@ -368,25 +359,23 @@ namespace ChickenInvadersMod.NPCs
                 {
                     LaserDirection = Main.rand.Next(0, 2);
                     NPC.netUpdate = true;
-
-                    int proj = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation1);
-                    int proj2 = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation2);
-                    int proj3 = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation3);
-                    int proj4 = Projectile.NewProjectile(NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation4);
+                    var entity = NPC.GetSource_FromAI();
+                    int proj = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation1);
+                    int proj2 = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation2);
+                    int proj3 = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation3);
+                    int proj4 = Projectile.NewProjectile(entity, NPC.Center, Vector2.Zero, Mod.Find<ModProjectile>("QuadrupleLaser").Type, NPC.damage, 0f, Main.myPlayer, NPC.whoAmI, laser.Value.Rotation4);
 
                     Main.projectile[proj].localAI[0] = LaserDirection;
                     Main.projectile[proj2].localAI[0] = LaserDirection;
                     Main.projectile[proj3].localAI[0] = LaserDirection;
                     Main.projectile[proj4].localAI[0] = LaserDirection;
+
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj4);
 
-                    if (!Main.dedServ)
-                    {
-                        SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Laser").WithVolume(3f).WithPitchVariance(.3f), NPC.position);
-                    }
+                    SoundEngine.PlaySound(SoundUtils.Laser, NPC.position);
                     return;
                 }
             }

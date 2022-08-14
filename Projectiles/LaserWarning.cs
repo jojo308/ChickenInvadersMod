@@ -43,11 +43,11 @@ namespace ChickenInvadersMod.Projectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
-            DrawLaser(spriteBatch, TextureAssets.Projectile[Projectile.type].Value, Owner.Center, -1.57f);
+            DrawLaser(TextureAssets.Projectile[Projectile.type].Value, Owner.Center, -1.57f);
             return false;
         }
 
-        public override void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int offset = 0)
+        public override void DrawLaser(Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int offset = 0)
         {
             float r = Projectile.velocity.ToRotation() + rotation;
             int sourceFrameY = Projectile.frame * Projectile.height;
@@ -60,7 +60,7 @@ namespace ChickenInvadersMod.Projectiles
                 Color color = Color.White;
                 var origin = start + i * Projectile.velocity;
 
-                spriteBatch.Draw(texture, origin - Main.screenPosition, new Rectangle(0, sourceFrameY, Projectile.width, Projectile.height),
+                Main.EntitySpriteDraw(texture, origin - Main.screenPosition, new Rectangle(0, sourceFrameY, Projectile.width, Projectile.height),
                     color, r, new Vector2(Projectile.width * .5f, Projectile.height * .5f), scale, 0, 0);
             }
         }

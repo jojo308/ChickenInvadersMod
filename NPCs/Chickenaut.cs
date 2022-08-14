@@ -34,11 +34,8 @@ namespace ChickenInvadersMod.NPCs
             NPC.knockBackResist = 0.7f;
             NPC.friendly = false;
             NPC.buffImmune[BuffID.Confused] = true;
-            if (!Main.dedServ)
-            {
-                NPC.HitSound = Mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
-                NPC.DeathSound = Mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
-            }
+            NPC.HitSound = SoundUtils.ChickenHit;
+            NPC.DeathSound = SoundUtils.ChickenDeath;
             projectileType = ModContent.ProjectileType<Projectiles.NeutronProjectile>();
             projectileDamage = NPC.damage / 2;
             projectileSpeed = 7f;
@@ -68,17 +65,17 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
                 int choice = dropChooser;
-                Item.NewItem(NPC.getRect(), choice);
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
             base.OnKill();
@@ -109,10 +106,7 @@ namespace ChickenInvadersMod.NPCs
                     shotsLeft--;
                     if (Main.netMode != NetmodeID.MultiplayerClient)
                     {
-                        if (!Main.dedServ)
-                        {
-                            SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(5f).WithPitchVariance(.3f), NPC.Bottom);
-                        }
+                        SoundEngine.PlaySound(SoundUtils.Neutron, NPC.Bottom);
                         NPC.ShootAtPlayer(NPC.Bottom, projectileType, projectileSpeed, projectileDamage);
                     }
                 }

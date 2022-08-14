@@ -55,17 +55,17 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.9);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.01);
                 int choice = dropChooser;
-                Item.NewItem(NPC.getRect(), choice);
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
             base.OnKill();
@@ -88,18 +88,14 @@ namespace ChickenInvadersMod.NPCs
                     Vector2 velocity2 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(Degrees + 120));
                     Vector2 velocity3 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(Degrees + 240));
 
-                    var proj = Projectile.NewProjectile(NPC.Center, velocity1, projectileType, projectileDamage, 0f, Main.myPlayer);
-                    var proj2 = Projectile.NewProjectile(NPC.Center, velocity2, projectileType, projectileDamage, 0f, Main.myPlayer);
-                    var proj3 = Projectile.NewProjectile(NPC.Center, velocity3, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity1, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj2 = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity2, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj3 = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity3, projectileType, projectileDamage, 0f, Main.myPlayer);
 
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
-
-                    if (!Main.dedServ)
-                    {
-                        SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), NPC.position);
-                    }
+                    SoundEngine.PlaySound(SoundUtils.Neutron, NPC.position);
                 }
             }
 

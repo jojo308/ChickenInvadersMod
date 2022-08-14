@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.Enums;
+using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ObjectData;
 
@@ -22,8 +23,8 @@ namespace ChickenInvadersMod.Tiles
             TileObjectData.newTile.AnchorTop = new AnchorData(AnchorType.SolidTile | AnchorType.SolidSide | AnchorType.SolidBottom, TileObjectData.newTile.Width, 0);
             TileObjectData.newTile.StyleWrapLimit = 111;
             TileObjectData.addTile(Type);
+            TileID.Sets.DisableSmartCursor[Type] = true;
             DustType = -1;
-            disableSmartCursor/* tModPorter Note: Removed. Use TileID.Sets.DisableSmartCursor instead */ = true;
             ModTranslation name = CreateMapEntryName();
             name.SetDefault("banner");
             AddMapEntry(new Color(13, 88, 130), name);
@@ -65,7 +66,7 @@ namespace ChickenInvadersMod.Tiles
                 default:
                     return;
             }
-            Item.NewItem(i * 16, j * 16, 16, 48, Mod.Find<ModItem>(item).Type);
+            Item.NewItem(new EntitySource_TileBreak(i, j), i * 16, j * 16, 16, 48, Mod.Find<ModItem>(item).Type);
         }
 
         public override void NearbyEffects(int i, int j, bool closer)
@@ -107,8 +108,9 @@ namespace ChickenInvadersMod.Tiles
                     default:
                         return;
                 }
-                player.NPCBannerBuff[Mod.Find<ModNPC>(type).Type] = true;
-                player.hasBanner = true;
+
+                Main.SceneMetrics.NPCBannerBuff[Mod.Find<ModNPC>(type).Type] = true;
+                Main.SceneMetrics.hasBanner = true;
             }
         }
 

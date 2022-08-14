@@ -49,7 +49,7 @@ namespace ChickenInvadersMod.Projectiles
         /// <param name="rotation">the rotation of the laser (radians)</param>
         /// <param name="scale">The scale of the laser</param>
         /// <param name="offset">The offset to draw the laser from</param>
-        public abstract void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = -1.57f, float scale = 1f, int offset = 0);
+        public abstract void DrawLaser(Texture2D texture, Vector2 start, float rotation = -1.57f, float scale = 1f, int offset = 0);
 
         /// <summary>
         /// Updates the velocity of the projectile. Can be used to move or rotate the laser
@@ -79,8 +79,8 @@ namespace ChickenInvadersMod.Projectiles
 
         public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
         {
-            drawCacheProjsBehindNPCs.Add(index);
-            base.DrawBehind(index, drawCacheProjsBehindNPCsAndTiles, drawCacheProjsBehindNPCs, drawCacheProjsBehindProjectiles, drawCacheProjsOverWiresUI);
+            behindNPCs.Add(index);
+            base.DrawBehind(index, behindNPCsAndTiles, behindNPCs, behindProjectiles, overPlayers, overWiresUI);
         }
 
         public override bool ShouldUpdatePosition() => false;

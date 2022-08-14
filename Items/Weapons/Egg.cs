@@ -36,7 +36,7 @@ namespace ChickenInvadersMod.Items.Weapons
 
         public override void OnConsumeItem(Player player)
         {
-            SoundEngine.PlaySound(Mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Drop").WithVolume(.5f).WithPitchVariance(.3f));
+            SoundEngine.PlaySound(SoundUtils.EggDrop, player.position);
             base.OnConsumeItem(player);
         }
     }

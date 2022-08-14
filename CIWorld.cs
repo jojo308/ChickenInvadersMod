@@ -74,16 +74,13 @@ namespace ChickenInvadersMod
             };
         }
 
-        public override void SaveWorldData(TagCompound tag)/* tModPorter Suggestion: Edit tag parameter instead of returning new TagCompound */
+        public override void SaveWorldData(TagCompound tag)
         {
-            return new TagCompound
-            {
-                { "CIActive", ChickenInvasionActive},
-                { "DownedSuperChicken", DownedSuperChicken },
-                { "SpawnX", SpawnLocation.X },
-                { "SpawnY", SpawnLocation.Y },
-                { "Wave", Main.invasionProgressWave }
-            };
+            tag["CIActive"] = ChickenInvasionActive;
+            tag["DownedSuperChicken"] = DownedSuperChicken;
+            tag["SpawnX"] = SpawnLocation.X;
+            tag["SpawnY"] = SpawnLocation.Y;
+            tag["Wave"] = Main.invasionProgressWave;
         }
 
         public override void LoadWorldData(TagCompound tag)

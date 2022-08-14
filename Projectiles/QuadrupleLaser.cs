@@ -20,6 +20,8 @@ namespace ChickenInvadersMod.Projectiles
             set => Projectile.ai[1] = value;
         }
 
+        public Texture2D Texture_ => TextureAssets.Projectile[Type].Value;
+
         /// <summary>
         /// Whether or not the projectile is rotating clockwise
         /// </summary>
@@ -44,11 +46,11 @@ namespace ChickenInvadersMod.Projectiles
 
         public override bool PreDraw(ref Color lightColor)
         {
-            DrawLaser(spriteBatch, TextureAssets.Projectile[Projectile.type].Value, Owner.Center, -1.57f);
+            DrawLaser(Texture_, Owner.Center, -1.57f);
             return false;
         }
 
-        public override void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int offset = 0)
+        public override void DrawLaser(Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int offset = 0)
         {
             float r = Projectile.velocity.ToRotation() + rotation;
             int sourceFrameY = Projectile.frame * Projectile.height;
@@ -61,15 +63,16 @@ namespace ChickenInvadersMod.Projectiles
                 Color color = Color.White;
                 var origin = start + i * Projectile.velocity;
 
-                spriteBatch.Draw(texture, origin - Main.screenPosition, new Rectangle(0, sourceFrameY, Projectile.width, Projectile.height),
+                Main.EntitySpriteDraw(texture, origin - Main.screenPosition, new Rectangle(0, sourceFrameY, Projectile.width, Projectile.height),
                     color, r, new Vector2(Projectile.width * .5f, Projectile.height * .5f), 1f, 0, 0);
+
             }
 
             // get the remaning distance between the last drawn laser sprite and the ground          
             float remaining = i - Distance;
 
             // Draw the last part which has the same height as the remaining distance
-            spriteBatch.Draw(texture, start + (Distance - remaining * 1.25f) * Projectile.velocity - Main.screenPosition, new Rectangle(0, sourceFrameY, Projectile.width, Projectile.height - (int)remaining),
+            Main.EntitySpriteDraw(texture, start + (Distance - remaining * 1.25f) * Projectile.velocity - Main.screenPosition, new Rectangle(0, sourceFrameY, Projectile.width, Projectile.height - (int)remaining),
                   Color.White, r, new Vector2(Projectile.width * .5f, Projectile.height * .5f), 1f, 0, 0);
 
             // cuts tiles. This code belongs in the CutTiles() method, but that method doesn't get called for some reason. So it is placed here...

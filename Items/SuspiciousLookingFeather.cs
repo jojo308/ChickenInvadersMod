@@ -28,9 +28,9 @@ namespace ChickenInvadersMod.Items
             Item.consumable = true;
         }
 
-        public override bool? UseItem(Player player)/* tModPorter Suggestion: Return null instead of false */
+        public override bool? UseItem(Player player)
         {
-            if (CIWorld.HasAnyInvasion()) return false;
+            if (CIWorld.HasAnyInvasion()) return null;
 
             if (Main.netMode == NetmodeID.SinglePlayer)
             {
@@ -46,7 +46,7 @@ namespace ChickenInvadersMod.Items
                 packet.Send();
                 return true;
             }
-            return false;
+            return null;
         }
     }
 }
