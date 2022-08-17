@@ -43,14 +43,15 @@ namespace ChickenInvadersMod
                     pool.Add(ModContent.NPCType<NPCs.Chick>(), .5f);
                     pool.Add(ModContent.NPCType<NPCs.Chicken>(), 1f);
                     pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 1f);
-                    pool.Add(ModContent.NPCType<NPCs.Barrier>(), .5f);
+                    pool.Add(ModContent.NPCType<NPCs.Egg>(), 0.5f);
+                    pool.Add(ModContent.NPCType<NPCs.Barrier>(), 0.5f);
                     pool.Add(ModContent.NPCType<NPCs.EggShipChicken>(), 0.5f);
                 }
                 else if (Main.invasionProgressWave == 3)
                 {
                     pool.Add(ModContent.NPCType<NPCs.Chicken>(), .5f);
                     pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 2f);
-                    pool.Add(ModContent.NPCType<NPCs.Egg>(), 0.5f);
+                    pool.Add(ModContent.NPCType<NPCs.Egg>(), 1f);
                     pool.Add(ModContent.NPCType<NPCs.UfoChicken>(), 0.75f);
                     pool.Add(ModContent.NPCType<NPCs.Barrier>(), .5f);
                     pool.Add(ModContent.NPCType<NPCs.Chickenaut>(), 0.75f);
@@ -58,10 +59,10 @@ namespace ChickenInvadersMod
                 }
                 else if (Main.invasionProgressWave == 4)
                 {
-                    pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 2f);
-                    pool.Add(ModContent.NPCType<NPCs.Egg>(), 1f);
+                    pool.Add(ModContent.NPCType<NPCs.PilotChicken>(), 1f);
+                    pool.Add(ModContent.NPCType<NPCs.Egg>(), 1.5f);
                     pool.Add(ModContent.NPCType<NPCs.UfoChicken>(), 0.5f);
-                    pool.Add(ModContent.NPCType<NPCs.Barrier>(), 1f);
+                    pool.Add(ModContent.NPCType<NPCs.Barrier>(), 0.5f);
                     pool.Add(ModContent.NPCType<NPCs.Chickenaut>(), 1f);
                     pool.Add(ModContent.NPCType<NPCs.EggShipChicken>(), 1f);
                     pool.Add(ModContent.NPCType<NPCs.ChickGatlingGun>(), 1f);

@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework;
 using System.IO;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Utilities;
@@ -83,6 +84,29 @@ namespace ChickenInvadersMod.NPCs
             NPC.buffImmune[BuffID.Confused] = true;
         }
 
+        public override bool CheckActive()
+        {
+            // prevent boss from despawning
+            return false;
+        }
+
+        public override void ScaleExpertStats(int numPlayers, float bossLifeScale)
+        {
+            if (Main.expertMode)
+            {
+                NPC.lifeMax = (int)(NPC.lifeMax * 0.6f * bossLifeScale);
+                NPC.damage = (int)(NPC.damage * 0.6f);
+                NPC.defense = 45;
+            }
+
+            if (Main.masterMode)
+            {
+                NPC.lifeMax = (int)(NPC.lifeMax * 0.8f * bossLifeScale);
+                NPC.damage = (int)(NPC.damage * 0.8f);
+                NPC.defense = 50;
+            }
+        }
+
         private const int FrameNormal = 0;
         private const int FrameNormal2 = 1;
         private const int FrameHit = 2;
@@ -144,10 +168,26 @@ namespace ChickenInvadersMod.NPCs
             hitRecently = 20f;
         }
 
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            // Drop this item with 5% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 20));
+
+            // Drop 25-50 of this item with 100% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 1, 25, 50));
+
+            // Drop plenty units of food            
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.ChickenDrumstick>(), 1, 20, 25));
+            npcLoot.Add(ItemDropRule.Common(ItemID.Burger, 1, 10, 15));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 1, 5, 10));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.QuadHamburger>(), 1, 1, 5));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.ChickenRoast>(), 1, 1, 5));
+        }
+
         // todo add support for boss checklist
         public override void OnKill()
         {
-            // if Super Chicken is defeated for the first time, update world and inform server if necessary
+            // if Super Chicken is defeated for the first time, set flag and trigger a lantern night
             if (!CIWorld.DownedSuperChicken)
             {
                 CIWorld.DownedSuperChicken = true;
@@ -155,13 +195,6 @@ namespace ChickenInvadersMod.NPCs
                 // triggers a lantern night
                 NPC.SetEventFlagCleared(ref CIWorld.DownedSuperChicken, -1);
             }
-
-            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(10, 31));
-            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.ChickenDrumstick>(), Main.rand.Next(5, 16));
-            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(2, 9));
-            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.DoubleHamburger>(), Main.rand.Next(2, 9));
-            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.ChickenRoast>(), Main.rand.Next(1, 4));
-            Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.QuadHamburger>(), Main.rand.Next(1, 4));
             base.OnKill();
         }
 

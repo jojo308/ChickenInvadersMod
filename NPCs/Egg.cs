@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
@@ -30,19 +31,38 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("EggBanner").Type;
         }
 
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            // Drop this item with 1% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 100));
+        }
+
         public override void OnKill()
         {
-            // if the NPC dies, it has a chance to spawn a new enemy
+            // if the NPC dies, it has a 1/3 chance to spawn a new enemy
             if (Main.rand.NextBool(3))
             {
-                // choose random chicken
-                var chooser = new WeightedRandom<int>();
-                chooser.Add(ModContent.NPCType<Chick>(), 0.2);
-                chooser.Add(ModContent.NPCType<Chicken>(), 0.2);
-                chooser.Add(ModContent.NPCType<PilotChicken>(), 0.2);
-                chooser.Add(ModContent.NPCType<UfoChicken>(), 0.2);
-                chooser.Add(ModContent.NPCType<Chickenaut>(), 0.1);
-                int choice = chooser;
+                // Add chickens to be spawned depending on the current wave
+                var choice = new WeightedRandom<int>();
+                choice.Add(ModContent.NPCType<Chick>(), 2);
+                choice.Add(ModContent.NPCType<Chicken>(), 2);
+                choice.Add(ModContent.NPCType<PilotChicken>(), 2);
+
+                if (Main.invasionProgressWave >= 2)
+                {
+                    choice.Add(ModContent.NPCType<EggShipChicken>(), 2);
+
+                }
+                if (Main.invasionProgressWave >= 3)
+                {
+                    choice.Add(ModContent.NPCType<Chickenaut>(), 2);
+                    choice.Add(ModContent.NPCType<UfoChicken>(), 2);
+                }
+
+                if (Main.invasionProgressWave >= 4)
+                {
+                    choice.Add(ModContent.NPCType<ChickGatlingGun>(), 2);
+                }
 
                 // spawn chicken and sync for multiplayer                
                 var npcIndex = NPC.NewNPC(NPC.GetSource_FromAI(), (int)NPC.position.X, (int)NPC.position.Y, choice);

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -133,6 +134,12 @@ namespace ChickenInvadersMod.NPCs
                 SoundEngine.PlaySound(SoundID.NPCDeath14, NPC.position);
             }
             base.HitEffect(hitDirection, damage);
+        }
+
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            // Drop this item with 1% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 100));
         }
 
         public override void AI()

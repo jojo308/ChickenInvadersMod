@@ -1,9 +1,9 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -47,28 +47,18 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("EggShipChickenBanner").Type;
         }
 
-        public override void OnKill()
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
-            if (Main.rand.NextBool(10))
-            {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.9);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.01);
-                int choice = dropChooser;
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
-            }
+            // Drop this item with 1% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 100));
 
-            if (Main.rand.NextBool(500))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
-            }
+            // Drop 1-5 of this item with 33% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 3, 1, 5));
 
-            if (Main.rand.NextBool(2))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
-            }
-
-            base.OnKill();
+            // Drop some units of food
+            npcLoot.Add(ItemDropRule.Common(ItemID.Burger, 5));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 8));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.QuadHamburger>(), 10));
         }
 
         public override void AI()
