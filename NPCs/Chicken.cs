@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -29,6 +30,15 @@ namespace ChickenInvadersMod.NPCs
             NPC.DeathSound = SoundUtils.ChickenDeath;
             Banner = NPC.type;
             BannerItem = Mod.Find<ModItem>("ChickenBanner").Type;
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Biomes.Sky,
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Caution: this is no ordinary chicken."),
+            });
         }
 
         public override float SpawnChance(NPCSpawnInfo spawnInfo)

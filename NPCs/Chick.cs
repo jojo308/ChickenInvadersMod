@@ -1,10 +1,12 @@
-﻿using Terraria;
+﻿using Microsoft.Xna.Framework;
+using Terraria;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace ChickenInvadersMod.NPCs
-{
+{   
     public class Chick : BaseChicken
     {
         int projectileType;
@@ -15,6 +17,15 @@ namespace ChickenInvadersMod.NPCs
         {
             DisplayName.SetDefault("Chick");
             Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
+
+            NPCID.Sets.NPCBestiaryDrawModifiers drawModifiers = new NPCID.Sets.NPCBestiaryDrawModifiers(0)
+            {
+                Position = new Vector2(0f, -12f),
+                PortraitPositionXOverride = 0f,
+                PortraitPositionYOverride = -24f
+            };
+
+            NPCID.Sets.NPCBestiaryDrawOffset.Add(Type, drawModifiers);
         }
 
         public override void SetDefaults()
@@ -34,7 +45,15 @@ namespace ChickenInvadersMod.NPCs
             projectileDamage = NPC.damage / 2;
             projectileSpeed = 5f;
             Banner = NPC.type;
-            BannerItem = Mod.Find<ModItem>("ChickBanner").Type;
+            BannerItem = Mod.Find<ModItem>("ChickBanner").Type;            
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("It's small and cute, but has a murderous look in its eyes."),
+            });            
         }
 
         public override void FindFrame(int frameHeight)
@@ -54,6 +73,7 @@ namespace ChickenInvadersMod.NPCs
 
             // Drop 1-5 of this item with 20% chance
             npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.ChickenTwinLegs>(), 5, 1, 5));
+            npcLoot.Add(ItemDropRule.Common(ItemID.ChickenNugget, 20));
         }
 
         public override void AI()

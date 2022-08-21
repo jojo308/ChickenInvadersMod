@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -29,6 +30,14 @@ namespace ChickenInvadersMod.NPCs
             NPC.DeathSound = SoundUtils.EggDeath;
             Banner = NPC.type;
             BannerItem = Mod.Find<ModItem>("EggBanner").Type;
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("It may or may not contain a nasty surprise."),
+            });
         }
 
         public override void ModifyNPCLoot(NPCLoot npcLoot)

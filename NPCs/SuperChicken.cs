@@ -1,8 +1,11 @@
 ﻿using ChickenInvadersMod.Projectiles;
 using Microsoft.Xna.Framework;
+using System.Collections.Generic;
 using System.IO;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -64,6 +67,20 @@ namespace ChickenInvadersMod.NPCs
         {
             DisplayName.SetDefault("Super Chicken");
             Main.npcFrameCount[NPC.type] = 4;
+
+            NPCDebuffImmunityData debuffData = new NPCDebuffImmunityData
+            {
+                SpecificallyImmuneTo = new int[] { BuffID.Confused }
+            };
+            NPCID.Sets.DebuffImmunitySets.Add(Type, debuffData);
+
+            var drawModifier = new NPCID.Sets.NPCBestiaryDrawModifiers(0)
+            {
+                Position = new Vector2(0f, 88f),
+                PortraitPositionXOverride = 0f,
+                PortraitPositionYOverride = 56f
+            };
+            NPCID.Sets.NPCBestiaryDrawOffset.Add(Type, drawModifier);
         }
 
         public override void SetDefaults()
@@ -81,7 +98,14 @@ namespace ChickenInvadersMod.NPCs
             NPC.boss = true;
             NPC.HitSound = SoundUtils.ChickenHit;
             NPC.DeathSound = SoundUtils.SuperChickenDeath;
-            NPC.buffImmune[BuffID.Confused] = true;
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Despite its appearance, the Super Chicken is actually a villain."),
+            });
         }
 
         public override bool CheckActive()

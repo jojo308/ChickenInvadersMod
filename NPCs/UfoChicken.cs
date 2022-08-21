@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -37,6 +38,14 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("UfoChickenBanner").Type;
         }
 
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("The UFO chicken is still learning how to control his UFO, but he's getting the hang of it."),
+            });
+        }
+
         public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
             // Drop this item with 1% chance
@@ -52,6 +61,7 @@ namespace ChickenInvadersMod.NPCs
                 ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 2)));
         }
 
+        // todo spawn a falling ufo after the npc is killed
         public override void AI()
         {
             // target nearest player

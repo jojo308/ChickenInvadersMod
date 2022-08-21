@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 
 namespace ChickenInvadersMod
@@ -46,5 +47,10 @@ namespace ChickenInvadersMod
         {
             return "Drops in hardmode near floating islands";
         }
+    }
+
+    public static class ModInvasions
+    {
+        public static SpawnConditionBestiaryInfoElement Chickens = new SpawnConditionBestiaryInfoElement("Chicken Invasion", 53, "Images/MapBG33");
     }
 }

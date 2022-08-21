@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -103,6 +104,14 @@ namespace ChickenInvadersMod.NPCs
             NPC.DeathSound = SoundID.NPCDeath14;
             Banner = NPC.type;
             BannerItem = Mod.Find<ModItem>("BarrierBanner").Type;
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Its purpose is to protect the chickens and it's pretty good at it."),
+            });
         }
 
         public override void FindFrame(int frameHeight)

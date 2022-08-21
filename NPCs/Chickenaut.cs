@@ -1,5 +1,7 @@
-﻿using Terraria;
+﻿using Microsoft.Xna.Framework;
+using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -19,6 +21,14 @@ namespace ChickenInvadersMod.NPCs
         {
             DisplayName.SetDefault("Chickenaut");
             Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
+
+            var drawModifier = new NPCID.Sets.NPCBestiaryDrawModifiers(0)
+            {
+                Position = new Vector2(0f, 32f),
+                PortraitPositionXOverride = 0f,
+                PortraitPositionYOverride = 0f
+            };
+            NPCID.Sets.NPCBestiaryDrawOffset.Add(Type, drawModifier);
         }
 
         public override void SetDefaults()
@@ -40,6 +50,14 @@ namespace ChickenInvadersMod.NPCs
             projectileSpeed = 7f;
             Banner = NPC.type;
             BannerItem = Mod.Find<ModItem>("ChickenautBanner").Type;
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("The metal suit prevents the Chickenaut from shooting eggs, but allows it to shoots lasers."),
+            });
         }
 
         public override void FindFrame(int frameHeight)

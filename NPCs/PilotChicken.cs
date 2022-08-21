@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -40,6 +41,14 @@ namespace ChickenInvadersMod.NPCs
             projectileSpeed = 7f;
             Banner = NPC.type;
             BannerItem = Mod.Find<ModItem>("PilotChickenBanner").Type;
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("A chicken that is specialized in... flying."),
+            });
         }
 
         public override void FindFrame(int frameHeight)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using Terraria;
+using Terraria.GameContent.Bestiary;
 using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -26,6 +27,23 @@ namespace ChickenInvadersMod.NPCs
         {
             DisplayName.SetDefault("Chick Gatling Gun");
             Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
+
+            NPCID.Sets.NPCBestiaryDrawModifiers drawModifiers = new NPCID.Sets.NPCBestiaryDrawModifiers(0)
+            {
+                Position = new Vector2(0f, 12f),
+                PortraitPositionXOverride = 0f,
+                PortraitPositionYOverride = 24f
+            };
+
+            NPCID.Sets.NPCBestiaryDrawOffset.Add(Type, drawModifiers);
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Why shoot one egg at a time when you have a gatling gun?"),
+            });
         }
 
         public override void SetDefaults()
