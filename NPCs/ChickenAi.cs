@@ -37,7 +37,7 @@ namespace ChickenInvadersMod.NPCs
             direction.Normalize();
 
             // shoot
-            int proj = Projectile.NewProjectile(position, direction * speed, projectileId, damage, kb, Main.myPlayer);
+            int proj = Projectile.NewProjectile(npc.GetSource_FromAI(), position, direction * speed, projectileId, damage, kb, Main.myPlayer);
             NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
         }
 
@@ -50,7 +50,7 @@ namespace ChickenInvadersMod.NPCs
             ShootDown(npc, npc.Bottom, projectileId, speed, damage, 0f);
         }
 
-        public static void ShootDown(this NPC _, Vector2 position, int projectileId, float speed, int damage, float kb = 0f)
+        public static void ShootDown(this NPC npc, Vector2 position, int projectileId, float speed, int damage, float kb = 0f)
         {
             // target down           
             Vector2 target = new Vector2(position.X, position.Y + 1);
@@ -58,7 +58,7 @@ namespace ChickenInvadersMod.NPCs
             dir.Normalize();
 
             // shoot
-            int proj = Projectile.NewProjectile(position, dir * speed, projectileId, damage, kb, Main.myPlayer);
+            int proj = Projectile.NewProjectile(npc.GetSource_FromAI(), position, dir * speed, projectileId, damage, kb, Main.myPlayer);
             NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
         }
 

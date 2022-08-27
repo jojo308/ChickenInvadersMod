@@ -1,44 +1,29 @@
-using Microsoft.Xna.Framework.Audio;
 using System.IO;
 using Terraria;
 using Terraria.ModLoader;
 
 namespace ChickenInvadersMod
 {
+    public class ChickenInvasionSceneEffect : ModSceneEffect
+    {
+        public override int Music => MusicLoader.GetMusicSlot(Mod, "Sounds/Music/CIEvent");
+
+        public override SceneEffectPriority Priority => SceneEffectPriority.Event;
+
+        public override bool IsSceneEffectActive(Player player)
+        {
+            if (Main.gameMenu || !player.active)
+            {
+                return false;
+            }
+
+            // play music if the event is active and the player is near the invasion
+            return CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(player);
+        }
+    }
+
     public class ChickenInvadersMod : Mod
     {
-        public override void UpdateMusic(ref int music, ref MusicPriority priority)
-        {
-            if (Main.gameMenu || Main.myPlayer == -1 || !Main.LocalPlayer.active)
-            {
-                return;
-            }
-
-            // change the music if an Chicken Invasion is active and the player is near it
-            if (CIWorld.ChickenInvasionActive && CIWorld.PlayerNearInvasion(Main.LocalPlayer))
-            {
-                music = GetSoundSlot(SoundType.Music, "Sounds/Music/CIEvent");
-                priority = MusicPriority.Event;
-            }
-        }
-
-        public override void Close()
-        {
-            var slots = new int[] {
-                GetSoundSlot(SoundType.Music, "Sounds/Music/CIEvent")
-            };
-
-            // stop music. Mod might crash if music is not properly closed
-            foreach (var slot in slots)
-            {
-                if (Main.music.IndexInRange(slot) && Main.music[slot]?.IsPlaying == true)
-                {
-                    Main.music[slot].Stop(AudioStopOptions.Immediate);
-                }
-            }
-            base.Close();
-        }
-
         public override void HandlePacket(BinaryReader reader, int whoAmI)
         {
             var messageType = (CIMessageType)reader.ReadByte();
@@ -51,7 +36,6 @@ namespace ChickenInvadersMod
                     break;
             }
         }
-
     }
 
     public enum CIMessageType : byte

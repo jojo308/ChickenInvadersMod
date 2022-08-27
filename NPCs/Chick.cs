@@ -13,68 +13,66 @@ namespace ChickenInvadersMod.NPCs
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Chick");
-            Main.npcFrameCount[npc.type] = Main.npcFrameCount[2];
+            Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
         }
 
         public override void SetDefaults()
         {
-            npc.width = 32;
-            npc.height = 32;
-            npc.aiStyle = 2;
-            npc.damage = 20;
-            npc.defense = 5;
-            npc.lifeMax = 75;
-            npc.value = 50f;
-            npc.friendly = false;
-            npc.buffImmune[BuffID.Confused] = true;
-            npc.HitSound = SoundID.NPCHit1;
-            if (!Main.dedServ)
-            {
-                npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chick_Death").WithVolume(1.5f).WithPitchVariance(.3f);
-            }
+            NPC.width = 32;
+            NPC.height = 32;
+            NPC.aiStyle = 2;
+            NPC.damage = 20;
+            NPC.defense = 5;
+            NPC.lifeMax = 75;
+            NPC.value = 50f;
+            NPC.friendly = false;
+            NPC.buffImmune[BuffID.Confused] = true;
+            NPC.HitSound = SoundID.NPCHit1;
+            NPC.DeathSound = SoundUtils.ChickDeath;
             projectileType = ModContent.ProjectileType<Projectiles.GuanoProjectile>();
-            projectileDamage = npc.damage / 2;
+            projectileDamage = NPC.damage / 2;
             projectileSpeed = 5f;
-            banner = npc.type;
-            bannerItem = mod.ItemType("ChickBanner");
+            Banner = NPC.type;
+            BannerItem = Mod.Find<ModItem>("ChickBanner").Type;
         }
 
         public override void FindFrame(int frameHeight)
         {
-            npc.frameCounter++;
-            if (npc.frameCounter >= 20) npc.frameCounter = 0;
-            npc.frame.Y = (int)npc.frameCounter / 10 * frameHeight;
+            NPC.frameCounter++;
+            if (NPC.frameCounter >= 20) NPC.frameCounter = 0;
+            NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        public override void NPCLoot()
+        public override void OnKill()
         {
             if (Main.rand.NextBool(7))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(1, 5));
+
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.ChickenTwinLegs>(), Main.rand.Next(1, 5));
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
-            base.NPCLoot();
+            base.OnKill();
         }
 
         public override void AI()
         {
             TimeLeft--;
 
-            if (npc.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && TimeLeft <= 0)
+            if (NPC.HasValidTarget && Main.netMode != NetmodeID.MultiplayerClient && TimeLeft <= 0)
             {
                 TimeLeft = Main.rand.NextFloat(400, 600);
-                npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
-                npc.netUpdate = true;
+                NPC.ShootAtPlayer(NPC.Bottom, projectileType, projectileSpeed, projectileDamage);
+                NPC.netUpdate = true;
             }
         }
     }

@@ -17,41 +17,39 @@ namespace ChickenInvadersMod.NPCs
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Pilot Chicken");
-            Main.npcFrameCount[npc.type] = Main.npcFrameCount[2];
+            Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
         }
 
         public override void SetDefaults()
         {
-            npc.width = 64;
-            npc.height = 64;
-            npc.aiStyle = 2;
-            npc.damage = 30;
-            npc.defense = 12;
-            npc.lifeMax = 250;
-            npc.value = 50f;
-            npc.friendly = false;
-            npc.buffImmune[BuffID.Poisoned] = true;
-            npc.buffImmune[BuffID.Confused] = true;
-            if (!Main.dedServ)
-            {
-                npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit2").WithVolume(1f).WithPitchVariance(.3f); ;
-                npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death2").WithVolume(1f).WithPitchVariance(.3f);
-            }
+            NPC.width = 64;
+            NPC.height = 64;
+            NPC.aiStyle = 2;
+            NPC.damage = 30;
+            NPC.defense = 12;
+            NPC.lifeMax = 250;
+            NPC.value = 50f;
+            NPC.friendly = false;
+            NPC.buffImmune[BuffID.Poisoned] = true;
+            NPC.buffImmune[BuffID.Confused] = true;
+            NPC.HitSound = SoundUtils.ChickenHit;
+            NPC.DeathSound = SoundUtils.ChickenDeath;
             projectileType = ModContent.ProjectileType<Projectiles.FallingEggProjectile>();
-            projectileDamage = npc.damage / 2;
+            Mod.Find<ModProjectile>("FallingEggProjectile");
+            projectileDamage = NPC.damage / 2;
             projectileSpeed = 7f;
-            banner = npc.type;
-            bannerItem = mod.ItemType("PilotChickenBanner");
+            Banner = NPC.type;
+            BannerItem = Mod.Find<ModItem>("PilotChickenBanner").Type;
         }
 
         public override void FindFrame(int frameHeight)
         {
-            npc.frameCounter++;
-            if (npc.frameCounter >= 20) npc.frameCounter = 0;
-            npc.frame.Y = (int)npc.frameCounter / 10 * frameHeight;
+            NPC.frameCounter++;
+            if (NPC.frameCounter >= 20) NPC.frameCounter = 0;
+            NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        public override void NPCLoot()
+        public override void OnKill()
         {
             if (Main.rand.NextBool(5))
             {
@@ -61,20 +59,20 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
                 int choice = dropChooser;
-                Item.NewItem(npc.getRect(), choice);
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
-            base.NPCLoot();
+            base.OnKill();
         }
 
         public override void AI()
@@ -86,7 +84,7 @@ namespace ChickenInvadersMod.NPCs
                 shooting = true;
                 TimeLeft = Main.rand.NextFloat(240, 480);
                 Interval--;
-                npc.netUpdate = true;
+                NPC.netUpdate = true;
 
                 // stop shooting afer 2 times
                 if (shotsLeft <= 0)
@@ -102,7 +100,7 @@ namespace ChickenInvadersMod.NPCs
 
                     if (Main.netMode != NetmodeID.MultiplayerClient)
                     {
-                        npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+                        NPC.ShootAtPlayer(NPC.Bottom, projectileType, projectileSpeed, projectileDamage);
                     }
                 }
             }

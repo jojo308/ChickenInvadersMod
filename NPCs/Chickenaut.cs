@@ -1,6 +1,8 @@
 ﻿using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.ModLoader.Utilities;
 using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
@@ -17,31 +19,28 @@ namespace ChickenInvadersMod.NPCs
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Chickenaut");
-            Main.npcFrameCount[npc.type] = Main.npcFrameCount[2];
+            Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
         }
 
         public override void SetDefaults()
         {
-            npc.width = 96;
-            npc.height = 96;
-            npc.aiStyle = 2;
-            npc.damage = 28;
-            npc.defense = 20;
-            npc.lifeMax = 600;
-            npc.value = 50f;
-            npc.knockBackResist = 0.7f;
-            npc.friendly = false;
-            npc.buffImmune[BuffID.Confused] = true;
-            if (!Main.dedServ)
-            {
-                npc.HitSound = mod.GetLegacySoundSlot(SoundType.NPCHit, "Sounds/NPCHit/Chicken_Hit1").WithVolume(1f).WithPitchVariance(.3f); ;
-                npc.DeathSound = mod.GetLegacySoundSlot(SoundType.NPCKilled, "Sounds/NPCKilled/Chicken_Death1").WithVolume(1f).WithPitchVariance(.3f);
-            }
+            NPC.width = 96;
+            NPC.height = 96;
+            NPC.aiStyle = 2;
+            NPC.damage = 28;
+            NPC.defense = 20;
+            NPC.lifeMax = 600;
+            NPC.value = 50f;
+            NPC.knockBackResist = 0.7f;
+            NPC.friendly = false;
+            NPC.buffImmune[BuffID.Confused] = true;
+            NPC.HitSound = SoundUtils.ChickenHit;
+            NPC.DeathSound = SoundUtils.ChickenDeath;
             projectileType = ModContent.ProjectileType<Projectiles.NeutronProjectile>();
-            projectileDamage = npc.damage / 2;
+            projectileDamage = NPC.damage / 2;
             projectileSpeed = 7f;
-            banner = npc.type;
-            bannerItem = mod.ItemType("ChickenautBanner");
+            Banner = NPC.type;
+            BannerItem = Mod.Find<ModItem>("ChickenautBanner").Type;
         }
 
         public override float SpawnChance(NPCSpawnInfo spawnInfo)
@@ -51,12 +50,12 @@ namespace ChickenInvadersMod.NPCs
 
         public override void FindFrame(int frameHeight)
         {
-            npc.frameCounter++;
-            if (npc.frameCounter >= 20) npc.frameCounter = 0;
-            npc.frame.Y = (int)npc.frameCounter / 10 * frameHeight;
+            NPC.frameCounter++;
+            if (NPC.frameCounter >= 20) NPC.frameCounter = 0;
+            NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        public override void NPCLoot()
+        public override void OnKill()
         {
             if (Main.rand.NextBool(3))
             {
@@ -66,20 +65,20 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
                 int choice = dropChooser;
-                Item.NewItem(npc.getRect(), choice);
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
-            base.NPCLoot();
+            base.OnKill();
         }
 
         public override void AI()
@@ -94,7 +93,7 @@ namespace ChickenInvadersMod.NPCs
                     shotsLeft = 3;
                     Interval = 16f;
                     TimeLeft = Main.rand.Next(150, 400);
-                    npc.netUpdate = true;
+                    NPC.netUpdate = true;
                     return;
                 }
 
@@ -107,11 +106,8 @@ namespace ChickenInvadersMod.NPCs
                     shotsLeft--;
                     if (Main.netMode != NetmodeID.MultiplayerClient)
                     {
-                        if (!Main.dedServ)
-                        {
-                            Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(5f).WithPitchVariance(.3f), npc.Bottom);
-                        }
-                        npc.ShootAtPlayer(npc.Bottom, projectileType, projectileSpeed, projectileDamage);
+                        SoundEngine.PlaySound(SoundUtils.Neutron, NPC.Bottom);
+                        NPC.ShootAtPlayer(NPC.Bottom, projectileType, projectileSpeed, projectileDamage);
                     }
                 }
             }

@@ -8,54 +8,52 @@ using Terraria.ModLoader.IO;
 
 namespace ChickenInvadersMod
 {
-    public class CIWorld : ModWorld
+    public class CIWorld : ModSystem
     {
-        private static readonly int MaxWaves = 5;
         public static bool ChickenInvasionActive = false;
         public static bool DownedSuperChicken = false;
         public static Vector2 SpawnLocation;
-
-        // The required amount of points for each wave
-        public class RequiredPoints
-        {
-            public const int Wave1 = 25;
-            public const int Wave2 = 40;
-            public const int Wave3 = 60;
-            public const int Wave4 = 80;
-            public const int Wave5 = 100;
-        }
-
-        public static int GetRequiredPoints()
-        {
-            var requiredPoints = 0;
-            switch (Main.invasionProgressWave)
-            {
-                case 1:
-                    requiredPoints = RequiredPoints.Wave1;
-                    break;
-                case 2:
-                    requiredPoints = RequiredPoints.Wave2;
-                    break;
-                case 3:
-                    requiredPoints = RequiredPoints.Wave3;
-                    break;
-                case 4:
-                    requiredPoints = RequiredPoints.Wave4;
-                    break;
-                case 5:
-                    requiredPoints = RequiredPoints.Wave5;
-                    break;
-            }
-
-            return requiredPoints;
-        }
-
-        // the enemies that belong to the Chicken Invasion
+        public static int[] RequiredPoints = new int[6] { 0, 25, 40, 60, 80, 100 };
         public static Dictionary<int, int> Enemies;
 
-        public override void Initialize()
+        /// <summary>
+        /// Returns the points needed for the specified wave
+        /// </summary>
+        /// <param name="wave">The current wave</param>
+        /// <returns>The points required for the specified wave</returns>
+        public static int GetPointsForWave(int wave)
         {
-            base.Initialize();
+            var playerCount = GetPlayerCount();
+            var extra1 = Main.expertMode ? 10 : 0;
+            var extra2 = Main.masterMode ? 15 : 0;
+            var extra3 = playerCount > 1 ? playerCount * 5 : 0;
+            return RequiredPoints[wave] + extra1 + extra2 + extra3;
+        }
+
+        /// <summary>
+        /// Returns the player count
+        /// </summary>
+        /// <returns>The player count</returns>
+        public static int GetPlayerCount()
+        {
+            if (Main.netMode == NetmodeID.SinglePlayer)
+            {
+                return 1;
+            }
+
+            int count = 0;
+            for (int i = 0; i < Main.maxPlayers; i++)
+            {
+                var p = Main.player[i];
+                if (p.active)
+                    count++;
+            }
+            return count;
+        }
+
+        public override void OnWorldLoad()
+        {
+            base.OnWorldLoad();
             ChickenInvasionActive = false;
             DownedSuperChicken = false;
 
@@ -74,26 +72,33 @@ namespace ChickenInvadersMod
             };
         }
 
-        public override TagCompound Save()
+        public override void SaveWorldData(TagCompound tag)
         {
-            return new TagCompound
+            tag["CIActive"] = ChickenInvasionActive;
+            tag["DownedSuperChicken"] = DownedSuperChicken;
+
+            if (ChickenInvasionActive)
             {
-                { "CIActive", ChickenInvasionActive},
-                { "DownedSuperChicken", DownedSuperChicken },
-                { "SpawnX", SpawnLocation.X },
-                { "SpawnY", SpawnLocation.Y },
-                { "Wave", Main.invasionProgressWave }
-            };
+                tag["SpawnX"] = SpawnLocation.X;
+                tag["SpawnY"] = SpawnLocation.Y;
+                tag["Wave"] = Main.invasionProgressWave;
+                tag["WaveMax"] = Main.invasionProgressMax;
+            }
         }
 
-        public override void Load(TagCompound tag)
+        public override void LoadWorldData(TagCompound tag)
         {
             ChickenInvasionActive = tag.GetBool("CIActive");
             DownedSuperChicken = tag.GetBool("DownedSuperChicken");
-            var x = tag.GetFloat("SpawnX");
-            var y = tag.GetFloat("SpawnY");
-            SpawnLocation = new Vector2(x, y);
-            Main.invasionProgressWave = tag.GetInt("Wave");
+
+            if (ChickenInvasionActive)
+            {
+                var x = tag.GetFloat("SpawnX");
+                var y = tag.GetFloat("SpawnY");
+                SpawnLocation = new Vector2(x, y);
+                Main.invasionProgressWave = tag.GetInt("Wave");
+                Main.invasionProgressMax = tag.GetInt("WaveMax");
+            }
         }
 
         public override void NetSend(BinaryWriter writer)
@@ -102,8 +107,12 @@ namespace ChickenInvadersMod
             flags[0] = ChickenInvasionActive;
             flags[1] = DownedSuperChicken;
             writer.Write(flags);
-            writer.WriteVector2(SpawnLocation);
-            writer.Write(Main.invasionProgressWave);
+
+            if (ChickenInvasionActive)
+            {
+                writer.WriteVector2(SpawnLocation);
+                writer.Write(Main.invasionProgressWave);
+            }
         }
 
         public override void NetReceive(BinaryReader reader)
@@ -111,8 +120,12 @@ namespace ChickenInvadersMod
             BitsByte flags = reader.ReadByte();
             ChickenInvasionActive = flags[0];
             DownedSuperChicken = flags[1];
-            SpawnLocation = reader.ReadVector2();
-            Main.invasionProgressWave = reader.ReadInt32();
+
+            if (ChickenInvasionActive)
+            {
+                SpawnLocation = reader.ReadVector2();
+                Main.invasionProgressWave = reader.ReadInt32();
+            }
         }
 
         /// <summary>
@@ -134,12 +147,11 @@ namespace ChickenInvadersMod
             // do not start invasion if there already is an invasion active
             if (HasAnyInvasion()) return false;
 
-            // todo scaling for multiplayer
             ChickenInvasionActive = true;
             SpawnLocation = position;
             Main.invasionType = -1;
             Main.invasionProgressWave = 1;
-            Main.invasionSize = GetRequiredPoints();
+            Main.invasionSize = GetPointsForWave(1);
             Main.invasionSizeStart = Main.invasionSize;
             Main.invasionProgress = 0;
             Main.invasionProgressIcon = 0;
@@ -174,7 +186,7 @@ namespace ChickenInvadersMod
             ChatUtils.SendMessage("Chickens have been defeated, for now...", ChatUtils.EventColor);
         }
 
-        public override void PreUpdate()
+        public override void PreUpdateWorld()
         {
             if (ChickenInvasionActive) UpdateCIEvent();
         }
@@ -188,7 +200,7 @@ namespace ChickenInvadersMod
             if (Main.invasionSize <= 0)
             {
                 // stop invasion if last wave is completed
-                if (Main.invasionProgressWave == MaxWaves)
+                if (Main.invasionProgressWave == 5)
                 {
                     StopChickenInvasion();
                     return;
@@ -212,7 +224,7 @@ namespace ChickenInvadersMod
         {
             Main.invasionProgressWave++;
             Main.invasionProgress = 0;
-            Main.invasionSize = GetRequiredPoints();
+            Main.invasionSize = GetPointsForWave(Main.invasionProgressWave);
             Main.invasionSizeStart = Main.invasionSize;
             Main.invasionProgressMax = Main.invasionSize;
             DisplayWaveMessage(Main.invasionProgressWave);
@@ -251,7 +263,7 @@ namespace ChickenInvadersMod
         /// </summary>
         public static void ReportInvasionProgress()
         {
-            var maxPoints = GetRequiredPoints();
+            var maxPoints = Main.invasionProgressMax;
             int progress = maxPoints - Main.invasionSize;
 
             if (Main.netMode == NetmodeID.SinglePlayer)

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.Utilities;
@@ -14,8 +15,8 @@ namespace ChickenInvadersMod.NPCs
 
         public float Degrees
         {
-            get => npc.ai[3];
-            set => npc.ai[3] = value;
+            get => NPC.ai[3];
+            set => NPC.ai[3] = value;
         }
 
         public override void SetStaticDefaults()
@@ -25,28 +26,28 @@ namespace ChickenInvadersMod.NPCs
 
         public override void SetDefaults()
         {
-            npc.width = 64;
-            npc.height = 81;
-            npc.damage = 35;
-            npc.defense = 15;
-            npc.lifeMax = 500;
-            npc.aiStyle = 2;
-            npc.defense = 25;
-            npc.value = 100f;
-            npc.knockBackResist = 0.6f;
-            npc.friendly = false;
-            npc.buffImmune[BuffID.Poisoned] = true;
-            npc.buffImmune[BuffID.Confused] = true;
-            npc.HitSound = SoundID.NPCHit4;
-            npc.DeathSound = SoundID.NPCDeath14;
+            NPC.width = 64;
+            NPC.height = 81;
+            NPC.damage = 35;
+            NPC.defense = 15;
+            NPC.lifeMax = 500;
+            NPC.aiStyle = 2;
+            NPC.defense = 25;
+            NPC.value = 100f;
+            NPC.knockBackResist = 0.6f;
+            NPC.friendly = false;
+            NPC.buffImmune[BuffID.Poisoned] = true;
+            NPC.buffImmune[BuffID.Confused] = true;
+            NPC.HitSound = SoundID.NPCHit4;
+            NPC.DeathSound = SoundID.NPCDeath14;
             projectileType = ModContent.ProjectileType<Projectiles.NeutronProjectile>();
             projectileSpeed = 10f;
-            projectileDamage = npc.damage / 2;
-            banner = npc.type;
-            bannerItem = mod.ItemType("EggShipChickenBanner");
+            projectileDamage = NPC.damage / 2;
+            Banner = NPC.type;
+            BannerItem = Mod.Find<ModItem>("EggShipChickenBanner").Type;
         }
 
-        public override void NPCLoot()
+        public override void OnKill()
         {
             if (Main.rand.NextBool(10))
             {
@@ -54,20 +55,20 @@ namespace ChickenInvadersMod.NPCs
                 dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.9);
                 dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.01);
                 int choice = dropChooser;
-                Item.NewItem(npc.getRect(), choice);
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
             }
 
             if (Main.rand.NextBool(500))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
             }
 
             if (Main.rand.NextBool(2))
             {
-                Item.NewItem(npc.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
+                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
             }
 
-            base.NPCLoot();
+            base.OnKill();
         }
 
         public override void AI()
@@ -79,7 +80,7 @@ namespace ChickenInvadersMod.NPCs
             {
                 TimeLeft = Main.rand.NextFloat(200, 600);
                 Degrees = Main.rand.Next(0, 120);
-                npc.netUpdate = true;
+                NPC.netUpdate = true;
 
                 if (Main.netMode != NetmodeID.MultiplayerClient)
                 {
@@ -87,26 +88,22 @@ namespace ChickenInvadersMod.NPCs
                     Vector2 velocity2 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(Degrees + 120));
                     Vector2 velocity3 = new Vector2(0, -projectileSpeed).RotatedBy(MathHelper.ToRadians(Degrees + 240));
 
-                    var proj = Projectile.NewProjectile(npc.Center, velocity1, projectileType, projectileDamage, 0f, Main.myPlayer);
-                    var proj2 = Projectile.NewProjectile(npc.Center, velocity2, projectileType, projectileDamage, 0f, Main.myPlayer);
-                    var proj3 = Projectile.NewProjectile(npc.Center, velocity3, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity1, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj2 = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity2, projectileType, projectileDamage, 0f, Main.myPlayer);
+                    var proj3 = Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, velocity3, projectileType, projectileDamage, 0f, Main.myPlayer);
 
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj2);
                     NetMessage.SendData(MessageID.SyncProjectile, -1, -1, null, proj3);
-
-                    if (!Main.dedServ)
-                    {
-                        Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Neutron").WithVolume(3f).WithPitchVariance(.3f), npc.position);
-                    }
+                    SoundEngine.PlaySound(SoundUtils.Neutron, NPC.position);
                 }
             }
 
             // make dust for engine
             var dust = DustID.MagnetSphere;
-            Dust.NewDust(new Vector2(npc.Bottom.X - 8, npc.Bottom.Y), 16, 16, dust, npc.velocity.X, npc.velocity.Y);
-            Dust.NewDust(new Vector2(npc.BottomLeft.X - 10, npc.BottomLeft.Y - 8), 16, 16, dust, npc.velocity.X, npc.velocity.Y);
-            Dust.NewDust(new Vector2(npc.BottomRight.X - 10, npc.BottomRight.Y - 9), 16, 16, dust, npc.velocity.X, npc.velocity.Y);
+            Dust.NewDust(new Vector2(NPC.Bottom.X - 8, NPC.Bottom.Y), 16, 16, dust, NPC.velocity.X, NPC.velocity.Y);
+            Dust.NewDust(new Vector2(NPC.BottomLeft.X - 10, NPC.BottomLeft.Y - 8), 16, 16, dust, NPC.velocity.X, NPC.velocity.Y);
+            Dust.NewDust(new Vector2(NPC.BottomRight.X - 10, NPC.BottomRight.Y - 9), 16, 16, dust, NPC.velocity.X, NPC.velocity.Y);
         }
     }
 }

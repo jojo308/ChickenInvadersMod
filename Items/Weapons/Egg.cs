@@ -1,4 +1,5 @@
 ﻿using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -13,29 +14,29 @@ namespace ChickenInvadersMod.Items.Weapons
 
         public override void SetDefaults()
         {
-            item.damage = 15;
-            item.noMelee = true;
-            item.thrown = true;
-            item.width = 40;
-            item.height = 40;
-            item.useTime = 17;
-            item.useAnimation = 17;
-            item.useStyle = ItemUseStyleID.SwingThrow;
-            item.knockBack = 4;
-            item.value = 10;
-            item.rare = ItemRarityID.White;
-            item.autoReuse = false;
-            item.shoot = mod.ProjectileType("EggProjectile");
-            item.shootSpeed = 8f;
-            item.useTurn = true;
-            item.maxStack = 999;
-            item.consumable = true;
-            item.noUseGraphic = true;
+            Item.damage = 15;
+            Item.noMelee = true;
+            Item.DamageType = DamageClass.Throwing;
+            Item.width = 40;
+            Item.height = 40;
+            Item.useTime = 17;
+            Item.useAnimation = 17;
+            Item.useStyle = ItemUseStyleID.Swing;
+            Item.knockBack = 4;
+            Item.value = 10;
+            Item.rare = ItemRarityID.White;
+            Item.autoReuse = false;
+            Item.shoot = Mod.Find<ModProjectile>("EggProjectile").Type;
+            Item.shootSpeed = 8f;
+            Item.useTurn = true;
+            Item.maxStack = 999;
+            Item.consumable = true;
+            Item.noUseGraphic = true;
         }
 
         public override void OnConsumeItem(Player player)
         {
-            Main.PlaySound(mod.GetLegacySoundSlot(SoundType.Custom, "Sounds/Custom/Egg_Drop").WithVolume(.5f).WithPitchVariance(.3f));
+            SoundEngine.PlaySound(SoundUtils.EggDrop, player.position);
             base.OnConsumeItem(player);
         }
     }

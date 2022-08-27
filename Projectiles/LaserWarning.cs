@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
+using Terraria.GameContent;
 
 namespace ChickenInvadersMod.Projectiles
 {
@@ -14,8 +15,8 @@ namespace ChickenInvadersMod.Projectiles
         /// </summary>       
         public float Rotation
         {
-            get => projectile.ai[1];
-            set => projectile.ai[1] = value;
+            get => Projectile.ai[1];
+            set => Projectile.ai[1] = value;
         }
 
         /// <summary>
@@ -23,44 +24,44 @@ namespace ChickenInvadersMod.Projectiles
         /// </summary>
         /// <param name="npc"></param>
         /// <returns></returns>
-        public override Vector2 GetEndPoint(NPC npc) => npc.Center + projectile.velocity * Distance;
+        public override Vector2 GetEndPoint(NPC npc) => npc.Center + Projectile.velocity * Distance;
 
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Laser Warning");
-            Main.projFrames[projectile.type] = 5;
+            Main.projFrames[Projectile.type] = 5;
         }
 
         public override void SetDefaults()
         {
             base.SetDefaults();
-            projectile.width = 2;
-            projectile.height = 10;
-            projectile.hostile = true;
-            projectile.timeLeft = 60;
+            Projectile.width = 2;
+            Projectile.height = 10;
+            Projectile.hostile = true;
+            Projectile.timeLeft = 60;
         }
 
-        public override bool PreDraw(SpriteBatch spriteBatch, Color lightColor)
+        public override bool PreDraw(ref Color lightColor)
         {
-            DrawLaser(spriteBatch, Main.projectileTexture[projectile.type], Owner.Center, -1.57f);
+            DrawLaser(TextureAssets.Projectile[Projectile.type].Value, Owner.Center, -1.57f);
             return false;
         }
 
-        public override void DrawLaser(SpriteBatch spriteBatch, Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int offset = 0)
+        public override void DrawLaser(Texture2D texture, Vector2 start, float rotation = 0f, float scale = 1f, int offset = 0)
         {
-            float r = projectile.velocity.ToRotation() + rotation;
-            int sourceFrameY = projectile.frame * projectile.height;
-            var step = projectile.height;
+            float r = Projectile.velocity.ToRotation() + rotation;
+            int sourceFrameY = Projectile.frame * Projectile.height;
+            var step = Projectile.height;
             int i;
 
             // Draw the laser
             for (i = 0; i <= Distance; i += step)
             {
                 Color color = Color.White;
-                var origin = start + i * projectile.velocity;
+                var origin = start + i * Projectile.velocity;
 
-                spriteBatch.Draw(texture, origin - Main.screenPosition, new Rectangle(0, sourceFrameY, projectile.width, projectile.height),
-                    color, r, new Vector2(projectile.width * .5f, projectile.height * .5f), scale, 0, 0);
+                Main.EntitySpriteDraw(texture, origin - Main.screenPosition, new Rectangle(0, sourceFrameY, Projectile.width, Projectile.height),
+                    color, r, new Vector2(Projectile.width * .5f, Projectile.height * .5f), scale, 0, 0);
             }
         }
 
@@ -70,9 +71,9 @@ namespace ChickenInvadersMod.Projectiles
             Vector2 target = (position * Distance).RotatedBy(Rotation, position);
             Vector2 diff = target - position;
             diff.Normalize();
-            projectile.velocity = diff;
-            projectile.position += projectile.velocity;
-            projectile.netUpdate = true;
+            Projectile.velocity = diff;
+            Projectile.position += Projectile.velocity;
+            Projectile.netUpdate = true;
         }
 
         public override void SetLaserPosition(NPC npc)
