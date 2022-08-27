@@ -1,9 +1,10 @@
-﻿using Terraria;
+﻿using Microsoft.Xna.Framework;
+using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.ModLoader.Utilities;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -20,6 +21,14 @@ namespace ChickenInvadersMod.NPCs
         {
             DisplayName.SetDefault("Chickenaut");
             Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
+
+            var drawModifier = new NPCID.Sets.NPCBestiaryDrawModifiers(0)
+            {
+                Position = new Vector2(0f, 32f),
+                PortraitPositionXOverride = 0f,
+                PortraitPositionYOverride = 0f
+            };
+            NPCID.Sets.NPCBestiaryDrawOffset.Add(Type, drawModifier);
         }
 
         public override void SetDefaults()
@@ -43,9 +52,12 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("ChickenautBanner").Type;
         }
 
-        public override float SpawnChance(NPCSpawnInfo spawnInfo)
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
         {
-            return SpawnCondition.Sky.Chance * 0.2f;
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("The metal suit prevents the Chickenaut from shooting eggs, but allows it to shoots lasers."),
+            });
         }
 
         public override void FindFrame(int frameHeight)
@@ -55,30 +67,21 @@ namespace ChickenInvadersMod.NPCs
             NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        public override void OnKill()
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
-            if (Main.rand.NextBool(3))
-            {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.ChickenDrumstick>(), 0.8);
-                dropChooser.Add(ModContent.ItemType<Items.ChickenRoast>(), 0.05);
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
-                int choice = dropChooser;
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
-            }
+            // Drop this item with 1% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 100));
 
-            if (Main.rand.NextBool(500))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
-            }
+            // Drop 1-5 of this item with 33% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 3, 1, 5));
 
-            if (Main.rand.NextBool(2))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
-            }
+            // Drop 1-5 of this item with 50% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.ChickenDrumstick>(), 2, 1, 5));
 
-            base.OnKill();
+            // Smaller chance to drop some extra food
+            var foodDropRule = ItemDropRule.OneFromOptions(3, ItemID.Burger, ModContent.ItemType<Items.DoubleHamburger>());
+            foodDropRule.OnFailedRoll(ItemDropRule.OneFromOptions(6, ModContent.ItemType<Items.QuadHamburger>(), ModContent.ItemType<Items.ChickenRoast>()));
+            npcLoot.Add(foodDropRule);
         }
 
         public override void AI()

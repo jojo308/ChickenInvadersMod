@@ -1,9 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using Terraria;
+using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -26,6 +27,23 @@ namespace ChickenInvadersMod.NPCs
         {
             DisplayName.SetDefault("Chick Gatling Gun");
             Main.npcFrameCount[NPC.type] = Main.npcFrameCount[2];
+
+            NPCID.Sets.NPCBestiaryDrawModifiers drawModifiers = new NPCID.Sets.NPCBestiaryDrawModifiers(0)
+            {
+                Position = new Vector2(0f, 12f),
+                PortraitPositionXOverride = 0f,
+                PortraitPositionYOverride = 24f
+            };
+
+            NPCID.Sets.NPCBestiaryDrawOffset.Add(Type, drawModifiers);
+        }
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Why shoot one egg at a time when you have a gatling gun?"),
+            });
         }
 
         public override void SetDefaults()
@@ -58,29 +76,18 @@ namespace ChickenInvadersMod.NPCs
             NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        // todo implement new loot system
-        public override void OnKill()
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
-            if (Main.rand.NextBool(10))
-            {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.9);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.01);
-                int choice = dropChooser;
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
-            }
+            // Drop this item with 2% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 50));
 
-            if (Main.rand.NextBool(500))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
-            }
+            // Drop 1-5 of this item with 33% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 3, 1, 5));
 
-            if (Main.rand.NextBool(2))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
-            }
-
-            base.OnKill();
+            npcLoot.Add(ItemDropRule.SequentialRules(1,
+               ItemDropRule.Common(ItemID.Burger, 2),
+               ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 2),
+               ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 2)));
         }
 
         /// <summary>

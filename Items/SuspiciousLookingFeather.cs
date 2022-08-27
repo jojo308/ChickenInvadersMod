@@ -23,7 +23,7 @@ namespace ChickenInvadersMod.Items
             Item.value = Item.sellPrice(gold: 2);
             Item.rare = ItemRarityID.Blue;
             Item.autoReuse = false;
-            Item.maxStack = 1;
+            Item.maxStack = 20;
             Item.UseSound = SoundID.Item1;
             Item.consumable = true;
         }

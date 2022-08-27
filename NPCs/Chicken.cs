@@ -1,8 +1,9 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Utilities;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -31,9 +32,22 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("ChickenBanner").Type;
         }
 
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Biomes.Sky,
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Caution: this is no ordinary chicken."),
+            });
+        }
+
         public override float SpawnChance(NPCSpawnInfo spawnInfo)
         {
-            return SpawnCondition.Sky.Chance * 0.2f;
+            // Only spawn in hard mode
+            if (Main.hardMode)
+                return SpawnCondition.Sky.Chance * 0.2f;
+
+            return 0f;
         }
 
         public override void FindFrame(int frameHeight)
@@ -43,32 +57,22 @@ namespace ChickenInvadersMod.NPCs
             NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        public override void OnKill()
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
-            if (Main.rand.NextBool(3))
-            {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.ChickenDrumstick>(), 0.8);
-                dropChooser.Add(ModContent.ItemType<Items.ChickenRoast>(), 0.05);
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
-                int choice = dropChooser;
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
-            }
+            // Drop item if the player is in sky height with 2% chance
+            npcLoot.Add(ItemDropRule.ByCondition(new InSkyCondition(), ModContent.ItemType<Items.SuspiciousLookingFeather>(), 50));
 
-            var chance = CIWorld.ChickenInvasionActive ? 500 : 100;
-            if (Main.rand.NextBool(chance))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
-            }
+            // Drop item if a Chicken Invasion is active with 0.5% chance  
+            npcLoot.Add(ItemDropRule.ByCondition(new ChickenInvasionCondition(), ModContent.ItemType<Items.SuspiciousLookingFeather>(), 200));
 
+            // Drop 1-5 of this item with 33% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 3, 1, 5));
 
-            if (Main.rand.NextBool(2))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
-            }
-
-            base.OnKill();
+            // Drop some units of food
+            var foodDropRule = ItemDropRule.Common(ModContent.ItemType<Items.ChickenDrumstick>(), 3, 1, 3);
+            foodDropRule.OnFailedRoll(ItemDropRule.Common(ItemID.Burger, 4));
+            foodDropRule.OnFailedRoll(ItemDropRule.OneFromOptions(4, ModContent.ItemType<Items.DoubleHamburger>(), ModContent.ItemType<Items.ChickenRoast>()));
+            npcLoot.Add(foodDropRule);
         }
 
         public override void AI()

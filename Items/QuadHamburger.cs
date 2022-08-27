@@ -23,7 +23,7 @@ namespace ChickenInvadersMod.Items
             Item.value = Item.sellPrice(gold: 2, silver: 50);
             Item.rare = ItemRarityID.Green;
             Item.autoReuse = false;
-            Item.maxStack = 99;
+            Item.maxStack = 30;
             Item.UseSound = SoundID.Item2;
             Item.buffType = BuffID.WellFed;
             Item.buffTime = 43200;

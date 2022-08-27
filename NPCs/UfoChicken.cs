@@ -1,7 +1,8 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -37,29 +38,30 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("UfoChickenBanner").Type;
         }
 
-        public override void OnKill()
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
         {
-            if (Main.rand.NextBool(10))
-            {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.9);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.1);
-                int choice = dropChooser;
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
-            }
-
-            if (Main.rand.NextBool(500))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
-            }
-            if (Main.rand.NextBool(2))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
-            }
-
-            base.OnKill();
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("The UFO chicken is still learning how to control his UFO, but he's getting the hang of it."),
+            });
         }
 
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            // Drop this item with 1% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 100));
+
+            // Drop 1-5 of this item with 33% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 3, 1, 5));
+
+            // Drop some units of food
+            npcLoot.Add(ItemDropRule.SequentialRules(5,
+                ItemDropRule.Common(ItemID.Burger, 2),
+                ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 2),
+                ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 2)));
+        }
+
+        // todo spawn a falling ufo after the npc is killed
         public override void AI()
         {
             // target nearest player

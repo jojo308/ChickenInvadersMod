@@ -1,7 +1,8 @@
 ﻿using Terraria;
+using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -42,6 +43,14 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("PilotChickenBanner").Type;
         }
 
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("A chicken that is specialized in... flying."),
+            });
+        }
+
         public override void FindFrame(int frameHeight)
         {
             NPC.frameCounter++;
@@ -49,31 +58,20 @@ namespace ChickenInvadersMod.NPCs
             NPC.frame.Y = (int)NPC.frameCounter / 10 * frameHeight;
         }
 
-        public override void OnKill()
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
-            if (Main.rand.NextBool(5))
-            {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.ChickenDrumstick>(), 0.8);
-                dropChooser.Add(ModContent.ItemType<Items.ChickenRoast>(), 0.05);
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.1);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.05);
-                int choice = dropChooser;
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
-            }
+            // Drop this item with 0.5% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 200));
 
-            if (Main.rand.NextBool(500))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
-            }
+            // Drop 1-5 of this item with 33% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 3, 1, 5));
 
-            if (Main.rand.NextBool(2))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
-            }
-
-            base.OnKill();
+            var foodDropRule = ItemDropRule.Common(ModContent.ItemType<Items.ChickenDrumstick>(), 5);
+            foodDropRule.OnFailedRoll(ItemDropRule.Common(ItemID.Burger, 5));
+            foodDropRule.OnFailedRoll(ItemDropRule.OneFromOptions(5, ModContent.ItemType<Items.DoubleHamburger>(), ModContent.ItemType<Items.ChickenRoast>()));
+            npcLoot.Add(foodDropRule);
         }
+
 
         public override void AI()
         {

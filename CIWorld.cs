@@ -1,10 +1,13 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 using System.IO;
 using Terraria;
+using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
+using Terraria.UI;
 
 namespace ChickenInvadersMod
 {
@@ -158,7 +161,6 @@ namespace ChickenInvadersMod
             Main.invasionProgressMax = Main.invasionSize;
             Main.invasionProgressNearInvasion = true;
             Main.invasionX = SpawnLocation.X;
-            Main.FakeLoadInvasionStart();
 
             if (Main.netMode != NetmodeID.MultiplayerClient)
             {
@@ -179,6 +181,7 @@ namespace ChickenInvadersMod
 
             ChickenInvasionActive = false;
             Main.invasionType = 0;
+            Main.invasionSize = 0;
 
             // inform server about new state   
             if (Main.netMode != NetmodeID.MultiplayerClient) NetMessage.SendData(MessageID.WorldData);
@@ -281,7 +284,6 @@ namespace ChickenInvadersMod
                 {
                     if (p.active && PlayerNearInvasion(p))
                     {
-                        Main.invasionProgressNearInvasion = true;
                         NetMessage.SendData(MessageID.InvasionProgressReport, p.whoAmI, -1, null, progress, maxPoints, 0, Main.invasionProgressWave);
                     }
                 }
@@ -305,6 +307,92 @@ namespace ChickenInvadersMod
                     break;
                 }
             }
+        }
+
+        internal ChickenInvasionProgressBar InvasionProgressBar;
+        private UserInterface InvasionProgressBarInterface;
+
+        public override void Load()
+        {
+            if (!Main.dedServ)
+            {
+                InvasionProgressBar = new ChickenInvasionProgressBar();
+                InvasionProgressBar.Activate();
+                InvasionProgressBarInterface = new UserInterface();
+                InvasionProgressBarInterface.SetState(InvasionProgressBar);
+            }
+        }
+
+        public override void UpdateUI(GameTime gameTime)
+        {
+            InvasionProgressBarInterface?.Update(gameTime);
+        }
+
+        public override void Unload()
+        {
+            if (!Main.dedServ)
+            {
+                InvasionProgressBarInterface?.SetState(null);
+                InvasionProgressBar = null;
+            }
+        }
+
+        public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
+        {
+            int index = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Invasion Progress Bars"));
+            if (index != -1 && index < layers.Count)
+            {
+                // insert the custom bar AFTER the vanilla bar since we want to draw on top of it and not behind               
+                layers.Insert(index + 1, new LegacyGameInterfaceLayer(
+                    "Chicken Invaders Mod: Test",
+                    delegate
+                    {
+                        // this will draw the invasion icon
+                        InvasionProgressBarInterface.Draw(Main.spriteBatch, new GameTime());
+                        return true;
+                    },
+                    InterfaceScaleType.UI)
+                );
+            }
+        }
+    }
+
+    class ChickenInvasionProgress : UIElement
+    {
+        public override void Draw(SpriteBatch spriteBatch)
+        {
+            if (Main.invasionProgressAlpha <= 0f)
+            {
+                return;
+            }
+
+            if (CIWorld.ChickenInvasionActive && !Main.gameMenu || Main.invasionProgressAlpha > 0)
+            {
+                Texture2D icon = (Texture2D)ModContent.Request<Texture2D>("ChickenInvadersMod/icon_small");
+                string text = "Chicken Invasion";
+                float scale = 0.5f + Main.invasionProgressAlpha * 0.5f;
+                Vector2 textSize = FontAssets.MouseText.Value.MeasureString(text);
+                float offset = textSize.X > 200f ? textSize.X - 200f : 120f;
+                Rectangle rect = Utils.CenteredRectangle(new Vector2(Main.screenWidth - offset, Main.screenHeight - 80), (textSize + new Vector2(icon.Width + 12, 6f)) * scale);
+
+                // draws the rectangle
+                Utils.DrawInvBG(spriteBatch, rect, new Color(165, 160, 155));
+                // draws the icon
+                spriteBatch.Draw(icon, rect.Left() + Vector2.UnitX * scale * 8f, null, Color.White * Main.invasionProgressAlpha, 0f, new Vector2(0f, icon.Height / 2), scale * 0.8f, SpriteEffects.None, 0f);
+                // draws the text
+                Utils.DrawBorderString(spriteBatch, text, rect.Right() + Vector2.UnitX * scale * -22f, Color.White * Main.invasionProgressAlpha, scale * 0.9f, 1f, 0.4f);
+            }
+        }
+    }
+
+    class ChickenInvasionProgressBar : UIState
+    {
+        public ChickenInvasionProgress chickenInvasionProgress;
+
+        public override void OnInitialize()
+        {
+            chickenInvasionProgress = new ChickenInvasionProgress();
+            Append(chickenInvasionProgress);
         }
     }
 }

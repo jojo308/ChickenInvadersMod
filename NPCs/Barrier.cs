@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -104,6 +106,14 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("BarrierBanner").Type;
         }
 
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Its purpose is to protect the chickens and it's pretty good at it."),
+            });
+        }
+
         public override void FindFrame(int frameHeight)
         {
             if (NPC.life > NPC.lifeMax * 0.66)
@@ -133,6 +143,12 @@ namespace ChickenInvadersMod.NPCs
                 SoundEngine.PlaySound(SoundID.NPCDeath14, NPC.position);
             }
             base.HitEffect(hitDirection, damage);
+        }
+
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            // Drop this item with 1% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 100));
         }
 
         public override void AI()

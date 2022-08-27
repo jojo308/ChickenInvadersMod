@@ -1,9 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.Audio;
+using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Terraria.Utilities;
 
 namespace ChickenInvadersMod.NPCs
 {
@@ -22,6 +23,15 @@ namespace ChickenInvadersMod.NPCs
         public override void SetStaticDefaults()
         {
             DisplayName.SetDefault("Egg Ship Chicken");
+
+            NPCID.Sets.NPCBestiaryDrawModifiers drawModifiers = new NPCID.Sets.NPCBestiaryDrawModifiers(0)
+            {
+                Position = new Vector2(0f, 12f),
+                PortraitPositionXOverride = 0f,
+                PortraitPositionYOverride = 0f
+            };
+
+            NPCID.Sets.NPCBestiaryDrawOffset.Add(Type, drawModifiers);
         }
 
         public override void SetDefaults()
@@ -47,28 +57,26 @@ namespace ChickenInvadersMod.NPCs
             BannerItem = Mod.Find<ModItem>("EggShipChickenBanner").Type;
         }
 
-        public override void OnKill()
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
         {
-            if (Main.rand.NextBool(10))
-            {
-                var dropChooser = new WeightedRandom<int>();
-                dropChooser.Add(ModContent.ItemType<Items.DoubleHamburger>(), 0.9);
-                dropChooser.Add(ModContent.ItemType<Items.QuadHamburger>(), 0.01);
-                int choice = dropChooser;
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), choice);
-            }
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[] {
+                ModInvasions.Chickens,
+                new FlavorTextBestiaryInfoElement("Geared with solid metal, the Egg Ship Chicken is a tough enemy to defeat."),
+            });
+        }
 
-            if (Main.rand.NextBool(500))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.SuspiciousLookingFeather>());
-            }
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            // Drop this item with 1% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.SuspiciousLookingFeather>(), 100));
 
-            if (Main.rand.NextBool(2))
-            {
-                Item.NewItem(NPC.GetSource_Loot(), NPC.getRect(), ModContent.ItemType<Items.Weapons.Egg>(), Main.rand.Next(1, 5));
-            }
+            // Drop 1-5 of this item with 33% chance
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.Weapons.Egg>(), 3, 1, 5));
 
-            base.OnKill();
+            // Drop some units of food
+            npcLoot.Add(ItemDropRule.Common(ItemID.Burger, 5));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.DoubleHamburger>(), 8));
+            npcLoot.Add(ItemDropRule.Common(ModContent.ItemType<Items.QuadHamburger>(), 10));
         }
 
         public override void AI()

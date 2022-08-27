@@ -61,7 +61,7 @@ namespace ChickenInvadersMod.Projectiles
                     Color.White, r, new Vector2(Projectile.width * .5f, Projectile.height * .5f), scale, 0, 1);
 
             // cuts tiles. This code belongs in the CutTiles() method, but that method doesn't get called for some reason. So it is placed here...
-            DelegateMethods.tilecut_0 = TileCuttingContext.AttackProjectile;            
+            DelegateMethods.tilecut_0 = TileCuttingContext.AttackProjectile;
             Utils.PlotTileLine(start, start + (Distance + remaining) * Projectile.velocity, (Projectile.width + 16) * Projectile.scale, DelegateMethods.CutTiles);
         }
 
