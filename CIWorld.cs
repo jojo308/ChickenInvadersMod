@@ -342,11 +342,12 @@ namespace ChickenInvadersMod
             int index = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Invasion Progress Bars"));
             if (index != -1 && index < layers.Count)
             {
-                // insert the custom bar AFTER the vanilla bar since we want to draw on top of it and not behind
+                // insert the custom bar AFTER the vanilla bar since we want to draw on top of it and not behind               
                 layers.Insert(index + 1, new LegacyGameInterfaceLayer(
                     "Chicken Invaders Mod: Test",
                     delegate
                     {
+                        // this will draw the invasion icon
                         InvasionProgressBarInterface.Draw(Main.spriteBatch, new GameTime());
                         return true;
                     },
@@ -367,35 +368,19 @@ namespace ChickenInvadersMod
 
             if (CIWorld.ChickenInvasionActive && !Main.gameMenu || Main.invasionProgressAlpha > 0)
             {
-                Texture2D value = (Texture2D)ModContent.Request<Texture2D>("ChickenInvadersMod/icon_small");
-                float num = 0.5f + Main.invasionProgressAlpha * 0.5f;
-                int num2 = (int)(200f * num);
-                int num3 = (int)(45f * num);
-                Vector2 vector = new Vector2(Main.screenWidth - 120, Main.screenHeight - 40);
-                Utils.DrawInvBG(spriteBatch, new Rectangle((int)vector.X - num2 / 2, (int)vector.Y - num3 / 2, num2, num3), new Color(63, 65, 151, 255) * 0.785f);
-
-                int progress = (int)(Main.invasionProgress * 100f / Main.invasionProgressMax);
-                string text2 = $"Wave {Main.invasionProgressWave}: {progress}%";
-                float num4 = MathHelper.Clamp(Main.invasionProgress / (float)Main.invasionProgressMax, 0f, 1f);
-                float num5 = 169f * num;
-                float num6 = 8f * num;
-                Vector2 vector2 = vector + Vector2.UnitY * num6 + Vector2.UnitX * 1f;
-                Utils.DrawBorderString(spriteBatch, text2, vector2, Color.White * Main.invasionProgressAlpha, num, 0.5f, 1f);
-
-                Texture2D value2 = TextureAssets.ColorBar.Value;
-                spriteBatch.Draw(value2, vector, null, Color.White * Main.invasionProgressAlpha, 0f, new Vector2(value2.Width / 2, 0f), num, SpriteEffects.None, 0f);
-                vector2 += Vector2.UnitX * (num4 - 0.5f) * num5;
-                spriteBatch.Draw(TextureAssets.MagicPixel.Value, vector2, new Rectangle(0, 0, 1, 1), new Color(255, 241, 51) * Main.invasionProgressAlpha, 0f, new Vector2(1f, 0.5f), new Vector2(num5 * num4, num6), SpriteEffects.None, 0f);
-                spriteBatch.Draw(TextureAssets.MagicPixel.Value, vector2, new Rectangle(0, 0, 1, 1), new Color(255, 165, 0, 127) * Main.invasionProgressAlpha, 0f, new Vector2(1f, 0.5f), new Vector2(2f, num6), SpriteEffects.None, 0f);
-                spriteBatch.Draw(TextureAssets.MagicPixel.Value, vector2, new Rectangle(0, 0, 1, 1), Color.Black * Main.invasionProgressAlpha, 0f, new Vector2(0f, 0.5f), new Vector2(num5 * (1f - num4), num6), SpriteEffects.None, 0f);
-
+                Texture2D icon = (Texture2D)ModContent.Request<Texture2D>("ChickenInvadersMod/icon_small");
                 string text = "Chicken Invasion";
-                Vector2 vector6 = FontAssets.MouseText.Value.MeasureString(text);
-                float num13 = vector6.X > 200f ? vector6.X - 200f : 120f;
-                Rectangle r3 = Utils.CenteredRectangle(new Vector2(Main.screenWidth - num13, Main.screenHeight - 80), (vector6 + new Vector2(value.Width + 12, 6f)) * num);
-                Utils.DrawInvBG(spriteBatch, r3, new Color(165, 160, 155));
-                spriteBatch.Draw(value, r3.Left() + Vector2.UnitX * num * 8f, null, Color.White * Main.invasionProgressAlpha, 0f, new Vector2(0f, value.Height / 2), num * 0.8f, SpriteEffects.None, 0f);
-                Utils.DrawBorderString(spriteBatch, text, r3.Right() + Vector2.UnitX * num * -22f, Color.White * Main.invasionProgressAlpha, num * 0.9f, 1f, 0.4f);
+                float scale = 0.5f + Main.invasionProgressAlpha * 0.5f;
+                Vector2 textSize = FontAssets.MouseText.Value.MeasureString(text);
+                float offset = textSize.X > 200f ? textSize.X - 200f : 120f;
+                Rectangle rect = Utils.CenteredRectangle(new Vector2(Main.screenWidth - offset, Main.screenHeight - 80), (textSize + new Vector2(icon.Width + 12, 6f)) * scale);
+
+                // draws the rectangle
+                Utils.DrawInvBG(spriteBatch, rect, new Color(165, 160, 155));
+                // draws the icon
+                spriteBatch.Draw(icon, rect.Left() + Vector2.UnitX * scale * 8f, null, Color.White * Main.invasionProgressAlpha, 0f, new Vector2(0f, icon.Height / 2), scale * 0.8f, SpriteEffects.None, 0f);
+                // draws the text
+                Utils.DrawBorderString(spriteBatch, text, rect.Right() + Vector2.UnitX * scale * -22f, Color.White * Main.invasionProgressAlpha, scale * 0.9f, 1f, 0.4f);
             }
         }
     }
