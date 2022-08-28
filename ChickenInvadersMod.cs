@@ -1,4 +1,4 @@
-using ChickenInvadersMod.Common;
+using ChickenInvadersMod.Common.Systems;
 using System.IO;
 using Terraria;
 using Terraria.ModLoader;

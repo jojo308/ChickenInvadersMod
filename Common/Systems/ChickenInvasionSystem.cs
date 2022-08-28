@@ -11,15 +11,39 @@ using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 using Terraria.UI;
 
-namespace ChickenInvadersMod.Common
+namespace ChickenInvadersMod.Common.Systems
 {
     public class ChickenInvasionSystem : ModSystem
     {
+        /// <summary>
+        /// Whether the Chicken Invasion is active or not
+        /// </summary>
         public static bool ChickenInvasionActive = false;
+
+        /// <summary>
+        /// Whether the Super Chicken has been downed or not
+        /// </summary>
         public static bool DownedSuperChicken = false;
+
+        /// <summary>
+        /// The spawn location of the event
+        /// </summary>
         public static Vector2 SpawnLocation;
+
+        /// <summary>
+        /// The required points for each wave
+        /// </summary>
         public static int[] RequiredPoints = new int[6] { 0, 25, 40, 60, 80, 100 };
+
+        /// <summary>
+        /// The NPCs that spawn during the chicken invasion and their points
+        /// </summary>
         public static Dictionary<int, int> Enemies;
+
+        /// <summary>
+        /// Time left before the invasion icon fades away
+        /// </summary>
+        public static int FadeAway;
 
         /// <summary>
         /// Returns the points needed for the specified wave
@@ -247,7 +271,8 @@ namespace ChickenInvadersMod.Common
                 case 2: ChatUtils.SendMessage("Wave 2: Chicks, Chickens, Pilot Chickens and Egg Ship Chickens", ChatUtils.EventColor); break;
                 case 3: ChatUtils.SendMessage("Wave 3: Pilot Chickens, Eggs, UFO chickens, Chickenaut and Egg Ship Chickens", ChatUtils.EventColor); break;
                 case 4: ChatUtils.SendMessage("Wave 4: Pilot Chickens, Eggs, UFO Chickens, Chickenauts, Egg Ship Chicken and ChickGatlingGun", ChatUtils.EventColor); break;
-                default: ChatUtils.SendMessage("Wave 5: Boss battle", ChatUtils.EventColor); break;
+                case 5: ChatUtils.SendMessage("Wave 5: Boss battle", ChatUtils.EventColor); break;
+                default: return;
             }
         }
 
@@ -341,20 +366,23 @@ namespace ChickenInvadersMod.Common
 
         public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
         {
-            int index = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Invasion Progress Bars"));
-            if (index != -1 && index < layers.Count)
+            if (ChickenInvasionActive || FadeAway > 0)
             {
-                // insert the custom bar AFTER the vanilla bar since we want to draw on top of it and not behind               
-                layers.Insert(index + 1, new LegacyGameInterfaceLayer(
-                    "Chicken Invaders Mod: Test",
-                    delegate
-                    {
-                        // this will draw the invasion icon
-                        InvasionProgressBarInterface.Draw(Main.spriteBatch, new GameTime());
-                        return true;
-                    },
-                    InterfaceScaleType.UI)
-                );
+                int index = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Invasion Progress Bars"));
+                if (index != -1 && index < layers.Count)
+                {
+                    // insert the custom bar AFTER the vanilla bar since we want to draw on top of it and not behind               
+                    layers.Insert(index + 1, new LegacyGameInterfaceLayer(
+                        "Chicken Invaders Mod: Invasion Icon",
+                        delegate
+                        {
+                            // this will draw the invasion icon                                               
+                            InvasionProgressBarInterface.Draw(Main.spriteBatch, new GameTime());
+                            return true;
+                        },
+                        InterfaceScaleType.UI)
+                    );
+                }
             }
         }
     }
@@ -363,27 +391,28 @@ namespace ChickenInvadersMod.Common
     {
         public override void Draw(SpriteBatch spriteBatch)
         {
-            if (Main.invasionProgressAlpha <= 0f)
+            if (ChickenInvasionSystem.ChickenInvasionActive)
             {
-                return;
+                ChickenInvasionSystem.FadeAway = 160;
+            }
+            else if (ChickenInvasionSystem.FadeAway > 0)
+            {
+                ChickenInvasionSystem.FadeAway--;
             }
 
-            if (ChickenInvasionSystem.ChickenInvasionActive && !Main.gameMenu || Main.invasionProgressAlpha > 0)
-            {
-                Texture2D icon = (Texture2D)ModContent.Request<Texture2D>("ChickenInvadersMod/icon_small");
-                string text = "Chicken Invasion";
-                float scale = 0.5f + Main.invasionProgressAlpha * 0.5f;
-                Vector2 textSize = FontAssets.MouseText.Value.MeasureString(text);
-                float offset = textSize.X > 200f ? textSize.X - 200f : 120f;
-                Rectangle rect = Utils.CenteredRectangle(new Vector2(Main.screenWidth - offset, Main.screenHeight - 80), (textSize + new Vector2(icon.Width + 12, 6f)) * scale);
+            Texture2D icon = (Texture2D)ModContent.Request<Texture2D>("ChickenInvadersMod/icon_small");
+            string text = "Chicken Invasion";
+            float scale = 0.5f + Main.invasionProgressAlpha * 0.5f;
+            Vector2 textSize = FontAssets.MouseText.Value.MeasureString(text);
+            float offset = textSize.X > 200f ? textSize.X - 200f : 120f;
+            Rectangle rect = Utils.CenteredRectangle(new Vector2(Main.screenWidth - offset, Main.screenHeight - 80), (textSize + new Vector2(icon.Width + 12, 6f)) * scale);
 
-                // draws the rectangle
-                Utils.DrawInvBG(spriteBatch, rect, new Color(165, 160, 155));
-                // draws the icon
-                spriteBatch.Draw(icon, rect.Left() + Vector2.UnitX * scale * 8f, null, Color.White * Main.invasionProgressAlpha, 0f, new Vector2(0f, icon.Height / 2), scale * 0.8f, SpriteEffects.None, 0f);
-                // draws the text
-                Utils.DrawBorderString(spriteBatch, text, rect.Right() + Vector2.UnitX * scale * -22f, Color.White * Main.invasionProgressAlpha, scale * 0.9f, 1f, 0.4f);
-            }
+            // draws the rectangle
+            Utils.DrawInvBG(spriteBatch, rect, new Color(165, 160, 155));
+            // draws the icon
+            spriteBatch.Draw(icon, rect.Left() + Vector2.UnitX * scale * 8f, null, Color.White * Main.invasionProgressAlpha, 0f, new Vector2(0f, icon.Height / 2), scale * 0.8f, SpriteEffects.None, 0f);
+            // draws the text
+            Utils.DrawBorderString(spriteBatch, text, rect.Right() + Vector2.UnitX * scale * -22f, Color.White * Main.invasionProgressAlpha, scale * 0.9f, 1f, 0.4f);
         }
     }
 

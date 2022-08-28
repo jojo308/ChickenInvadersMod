@@ -1,4 +1,5 @@
 ﻿using ChickenInvadersMod.Common;
+using ChickenInvadersMod.Common.Systems;
 using ChickenInvadersMod.Content.Items.Consumables;
 using Microsoft.Xna.Framework;
 using Terraria;
