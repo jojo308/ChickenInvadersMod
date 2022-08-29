@@ -1,4 +1,5 @@
-﻿using Terraria;
+﻿using ChickenInvadersMod.Common.Systems;
+using Terraria;
 using Terraria.GameContent.ItemDropRules;
 
 namespace ChickenInvadersMod.Common.ItemDropRules.DropConditions

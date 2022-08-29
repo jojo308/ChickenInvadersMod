@@ -1,4 +1,5 @@
-﻿using ChickenInvadersMod.Content.NPCs;
+﻿using ChickenInvadersMod.Common.Systems;
+using ChickenInvadersMod.Content.NPCs;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
